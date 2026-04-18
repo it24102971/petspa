@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "tourism-app",
-    "slug": "tourism-app",
+    "name": "Pet Spa",
+    "slug": "pet-spa",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
