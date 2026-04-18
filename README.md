@@ -1,16 +1,16 @@
-# 🌍 Tourism Management Mobile App
+# 🐾 Paws & Palms Pet Spa - Mobile App
 
-A premium full-stack mobile application built using the MERN stack with Expo (React Native). This platform allows users to explore tourist destinations, book tours, and manage travel-related services with ease.
+
+A premium full-stack mobile application built using the MERN stack with Expo (React Native). This platform allows pet owners to book grooming sessions, spa treatments, and pet care services with ease.
 
 ## 🏗️ Project Architecture
 
 The project is organized into two main directories for a clean separation of concerns:
 
 ```text
-Tourism-Management-Mobile-App/
+Paws-and-Palms-Pet-Spa/
 ├── backend/            # Node.js + Express + MongoDB Server
 │   ├── src/            # Backend source code
-│   ├── .env            # Environment variables
 │   └── server.js       # Entry point
 │
 └── frontend/           # Expo (React Native) Mobile Application
@@ -26,9 +26,9 @@ Tourism-Management-Mobile-App/
 
 ### Frontend
 - **Framework**: Expo (React Native)
-- **Language**: TypeScript / JavaScript
 - **Navigation**: Expo Router (File-based routing)
-- **Styling**: Native CSS-in-JS
+- **Styling**: Native CSS-in-JS (StyleSheet)
+- **Theme**: Premium Dark mode with "Paws & Palms" branding
 
 ### Backend
 - **Runtime**: Node.js
@@ -53,7 +53,7 @@ Tourism-Management-Mobile-App/
    ```bash
    npm install
    ```
-3. Configure your `.env` file with your MongoDB connection string.
+3. Configure your `.env` file with your MongoDB connection string (See `PRIVATE_LOCAL_FILES` for your local backup).
 4. Start the server:
    ```bash
    npm run dev
@@ -79,15 +79,15 @@ Tourism-Management-Mobile-App/
 ## 🎯 Project Roadmap
 
 - [x] Project Structure Setup
-- [x] Welcome & Authentication UI
+- [x] Welcome & Authentication UI (Paws & Palms Branding)
 - [x] Basic Backend API setup
-- [ ] Connect Frontend to Backend APIs
-- [ ] Implement Destination Booking
-- [ ] User Profile Management
+- [x] User Registration & Login
+- [ ] Pet Profile Management
+- [ ] Appointment Booking System
+- [ ] Service Catalog & Pricing
 
 ---
 
 ## ⚠️ Important Notes
-- **Network**: Ensure your phone and computer are on the same WiFi network to use Expo Go.
 - **Environment**: Never share your `.env` file or commit it to version control.
-- **Localhost**: When connecting the frontend to the backend, use your computer's **Local IP Address** (e.g., `192.168.x.x`) instead of `localhost`.
+- **Localhost**: When connecting the frontend to the backend, use your computer's **Local IP Address** (e.g., `192.168.x.x`) instead of `localhost` in your API configuration
