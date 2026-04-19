@@ -1,18 +1,18 @@
 {
   "expo": {
-    "name": "tourism-app",
-    "slug": "tourism-app",
+    "name": "Pet Spa",
+    "slug": "pet-spa",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "tourismapp",
+    "scheme": "petspa",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true
     },
     "android": {
-      "package": "com.sliit.tourismapp",
+      "package": "com.sliit.petspa",
       "usesCleartextTraffic": true,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",

@@ -24,6 +24,22 @@ const userSchema = new mongoose.Schema(
       required: true,
       minlength: 6,
     },
+    experience: {
+      type: String,
+      trim: true,
+    },
+    specialization: {
+      type: String,
+      trim: true,
+    },
+    availableDays: {
+      type: String,
+      trim: true,
+    },
+    availableTime: {
+      type: String,
+      trim: true,
+    },
     role: {
       type: String,
       enum: ["customer", "admin", "groomer"],

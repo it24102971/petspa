@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, SafeAreaView, Pressable, ActivityIndicator, Alert, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -6,16 +6,13 @@ import { StatusBar } from 'expo-status-bar';
 import { API_BASE_URL } from '@/constants/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-type RoleFilter = 'all' | 'customer' | 'groomer' | 'admin';
-
-export default function UserManagementScreen() {
-  const [users, setUsers] = useState<any[]>([]);
+export default function GroomerManagementScreen() {
+  const [groomers, setGroomers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedRole, setSelectedRole] = useState<RoleFilter>('all');
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const router = useRouter();
 
-  const fetchUsers = async () => {
+  const fetchGroomers = async () => {
     try {
       setLoading(true);
       const token = await AsyncStorage.getItem('auth:token');
@@ -37,12 +34,13 @@ export default function UserManagementScreen() {
       const data = await response.json();
       
       if (response.ok) {
-        setUsers(data);
+        // Filter only groomers
+        setGroomers(data.filter((u: any) => u.role === 'groomer'));
       } else {
-        throw new Error(data.message || "Failed to fetch users.");
+        throw new Error(data.message || "Failed to fetch groomers.");
       }
     } catch (error: any) {
-      console.error("Fetch users failed:", error);
+      console.error("Fetch groomers failed:", error);
       Alert.alert("API Error", error.message || "Could not connect to the database.");
     } finally {
       setLoading(false);
@@ -50,7 +48,7 @@ export default function UserManagementScreen() {
   };
 
   useEffect(() => {
-    fetchUsers();
+    fetchGroomers();
   }, []);
 
   const handleToggleStatus = async (userId: string, currentStatus: boolean, name: string) => {
@@ -58,7 +56,7 @@ export default function UserManagementScreen() {
     
     Alert.alert(
       "Confirm Action",
-      `Are you sure you want to ${action} ${name}'s account?`,
+      `Are you sure you want to ${action} groomer ${name}'s account?`,
       [
         { text: "Cancel", style: "cancel" },
         { 
@@ -78,7 +76,7 @@ export default function UserManagementScreen() {
 
               const data = await response.json();
               if (response.ok) {
-                setUsers(prev => prev.map(u => 
+                setGroomers(prev => prev.map(u => 
                   u.id === userId ? { ...u, isActive: data.isActive } : u
                 ));
               } else {
@@ -95,40 +93,22 @@ export default function UserManagementScreen() {
     );
   };
 
-  const filteredUsers = useMemo(() => {
-    if (selectedRole === 'all') return users;
-    return users.filter(u => u.role === selectedRole);
-  }, [users, selectedRole]);
-
   const renderItem = ({ item }: any) => (
-    <View style={[styles.userCard, !item.isActive && styles.userCardInactive]}>
-      <View style={styles.userAvatar}>
-        <Text style={styles.avatarInitial}>{(item.fullName || "U")[0].toUpperCase()}</Text>
-        {!item.isActive && (
-          <View style={styles.inactiveAvatarOverlay}>
-            <Ionicons name="lock-closed" size={12} color="#ffffff" />
-          </View>
-        )}
-      </View>
-      <View style={styles.userInfo}>
-        <View style={styles.nameRow}>
-          <Text style={styles.userName}>{item.fullName}</Text>
-          {item.isActive === false && (
-            <View style={styles.statusBadge}>
-              <Text style={styles.statusText}>INACTIVE</Text>
+    <View style={[styles.card, !item.isActive && styles.cardInactive]}>
+      <View style={styles.cardHeader}>
+        <View style={styles.avatar}>
+          <Ionicons name="cut" size={24} color="#1A3B2F" />
+          {!item.isActive && (
+            <View style={styles.inactiveAvatarOverlay}>
+              <Ionicons name="lock-closed" size={12} color="#ffffff" />
             </View>
           )}
         </View>
-        <Text style={styles.userEmail}>{item.email}</Text>
-        <View style={[
-          styles.roleBadge, 
-          { backgroundColor: item.role === 'admin' ? '#FFD166' : item.role === 'groomer' ? '#E3F2FD' : 'rgba(26, 59, 47, 0.05)' }
-        ]}>
-          <Text style={styles.roleText}>{item.role.replace('_', ' ').toUpperCase()}</Text>
+        <View style={styles.infoContainer}>
+          <Text style={styles.nameText}>{item.fullName}</Text>
+          <Text style={styles.emailText}>{item.email}</Text>
         </View>
-      </View>
-      
-      {item.role !== 'admin' && (
+        
         <Pressable 
           disabled={togglingId === item.id}
           onPress={() => handleToggleStatus(item.id, item.isActive, item.fullName)}
@@ -144,36 +124,26 @@ export default function UserManagementScreen() {
             />
           )}
         </Pressable>
-      )}
-    </View>
-  );
+      </View>
 
-  const FilterPills = () => (
-    <View style={styles.filterContainer}>
-      <Pressable 
-        style={[styles.filterPill, selectedRole === 'all' && styles.filterPillActive]} 
-        onPress={() => setSelectedRole('all')}
-      >
-        <Text style={[styles.filterText, selectedRole === 'all' && styles.filterTextActive]}>All Users</Text>
-      </Pressable>
-      <Pressable 
-        style={[styles.filterPill, selectedRole === 'customer' && styles.filterPillActive]} 
-        onPress={() => setSelectedRole('customer')}
-      >
-        <Text style={[styles.filterText, selectedRole === 'customer' && styles.filterTextActive]}>Customers</Text>
-      </Pressable>
-      <Pressable 
-        style={[styles.filterPill, selectedRole === 'groomer' && styles.filterPillActive]} 
-        onPress={() => setSelectedRole('groomer')}
-      >
-        <Text style={[styles.filterText, selectedRole === 'groomer' && styles.filterTextActive]}>Groomers</Text>
-      </Pressable>
-      <Pressable 
-        style={[styles.filterPill, selectedRole === 'admin' && styles.filterPillActive]} 
-        onPress={() => setSelectedRole('admin')}
-      >
-        <Text style={[styles.filterText, selectedRole === 'admin' && styles.filterTextActive]}>Admins</Text>
-      </Pressable>
+      <View style={styles.divider} />
+
+      <View style={styles.statsRow}>
+        <View style={styles.statItem}>
+          <Text style={styles.statLabel}>Status</Text>
+          <Text style={[styles.statValue, { color: item.isActive ? '#2E7D32' : '#D32F2F' }]}>
+            {item.isActive ? 'Active' : 'Inactive'}
+          </Text>
+        </View>
+        <View style={styles.statItem}>
+          <Text style={styles.statLabel}>Rating</Text>
+          <Text style={styles.statValue}>4.8 ★</Text>
+        </View>
+        <View style={styles.statItem}>
+          <Text style={styles.statLabel}>Services</Text>
+          <Text style={styles.statValue}>12</Text>
+        </View>
+      </View>
     </View>
   );
 
@@ -185,30 +155,28 @@ export default function UserManagementScreen() {
           <Pressable onPress={() => router.back()} style={styles.backButton} hitSlop={15}>
             <Ionicons name="chevron-back" size={24} color="#1A3B2F" />
           </Pressable>
-          <Text style={styles.headerTitle}>User Management</Text>
-          <Pressable onPress={fetchUsers} style={styles.refreshButton} hitSlop={15}>
+          <Text style={styles.headerTitle}>Groomer Management</Text>
+          <Pressable onPress={fetchGroomers} style={styles.refreshButton} hitSlop={15}>
             <Ionicons name="refresh" size={20} color="#1A3B2F" />
           </Pressable>
         </View>
 
-        <FilterPills />
-
         {loading ? (
           <View style={styles.loadingArea}>
             <ActivityIndicator size="large" color="#FFD166" />
-            <Text style={styles.loadingText}>Connecting to database...</Text>
+            <Text style={styles.loadingText}>Loading groomers...</Text>
           </View>
         ) : (
           <FlatList
-            data={filteredUsers}
+            data={groomers}
             keyExtractor={(item) => item.id}
             renderItem={renderItem}
             contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}
             ListEmptyComponent={
               <View style={styles.emptyState}>
-                <Ionicons name="people-outline" size={48} color="rgba(26, 59, 47, 0.1)" />
-                <Text style={styles.emptyText}>No users found in this category.</Text>
+                <Ionicons name="business-outline" size={48} color="rgba(26, 59, 47, 0.1)" />
+                <Text style={styles.emptyText}>No groomers registered yet.</Text>
               </View>
             }
           />
@@ -254,33 +222,6 @@ const styles = StyleSheet.create({
     color: '#1A3B2F',
     letterSpacing: -0.5,
   },
-  filterContainer: {
-    flexDirection: 'row',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    gap: 8,
-    flexWrap: 'wrap',
-  },
-  filterPill: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 999,
-    backgroundColor: '#ffffff',
-    borderWidth: 1,
-    borderColor: 'rgba(26, 59, 47, 0.08)',
-  },
-  filterPillActive: {
-    backgroundColor: '#FFD166',
-    borderColor: '#FFD166',
-  },
-  filterText: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: 'rgba(26, 59, 47, 0.6)',
-  },
-  filterTextActive: {
-    color: '#1A3B2F',
-  },
   loadingArea: {
     flex: 1,
     justifyContent: 'center',
@@ -294,99 +235,64 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: 20,
-    paddingTop: 0,
-    gap: 12,
+    gap: 16,
   },
-  userCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  card: {
     backgroundColor: '#ffffff',
-    padding: 16,
     borderRadius: 24,
+    padding: 20,
     borderWidth: 1,
     borderColor: 'rgba(26, 59, 47, 0.08)',
-    gap: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.02,
     shadowRadius: 10,
     elevation: 2,
   },
-  userCardInactive: {
+  cardInactive: {
     backgroundColor: 'rgba(239, 239, 239, 0.5)',
     borderColor: 'rgba(211, 47, 47, 0.1)',
   },
-  userAvatar: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: '#F0FAF5',
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  avatar: {
+    width: 56,
+    height: 56,
+    borderRadius: 18,
+    backgroundColor: '#FFD166',
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(26, 59, 47, 0.1)',
     position: 'relative',
   },
   inactiveAvatarOverlay: {
     position: 'absolute',
-    bottom: -2,
-    right: -2,
+    bottom: -4,
+    right: -4,
     backgroundColor: '#D32F2F',
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
     borderColor: '#ffffff',
   },
-  avatarInitial: {
-    fontSize: 22,
-    fontWeight: '900',
-    color: '#1A3B2F',
-  },
-  userInfo: {
+  infoContainer: {
     flex: 1,
   },
-  nameRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  userName: {
-    fontSize: 17,
+  nameText: {
+    fontSize: 18,
     fontWeight: '900',
     color: '#1A3B2F',
+    marginBottom: 4,
   },
-  statusBadge: {
-    backgroundColor: 'rgba(211, 47, 47, 0.1)',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  statusText: {
-    fontSize: 9,
-    fontWeight: '900',
-    color: '#D32F2F',
-  },
-  userEmail: {
+  emailText: {
     fontSize: 13,
     color: 'rgba(26, 59, 47, 0.5)',
     fontWeight: '600',
-    marginTop: 2,
-  },
-  roleBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
-    alignSelf: 'flex-start',
-    marginTop: 6,
-  },
-  roleText: {
-    fontSize: 9,
-    fontWeight: '900',
-    color: '#1A3B2F',
-    letterSpacing: 0.5,
   },
   toggleBtn: {
     width: 44,
@@ -401,6 +307,30 @@ const styles = StyleSheet.create({
   },
   btnActivate: {
     backgroundColor: '#81C784',
+  },
+  divider: {
+    height: 1,
+    backgroundColor: 'rgba(26, 59, 47, 0.05)',
+    marginVertical: 16,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  statItem: {
+    alignItems: 'center',
+  },
+  statLabel: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: 'rgba(26, 59, 47, 0.4)',
+    textTransform: 'uppercase',
+    marginBottom: 4,
+  },
+  statValue: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#1A3B2F',
   },
   emptyState: {
     marginTop: 80,
