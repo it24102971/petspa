@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, Pressable, FlatList, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
+import { SIZES } from '@/constants/spacing';
+import { useSidebar } from '@/context/SidebarContext';
 
 const APPOINTMENTS_DATA = [
   {
@@ -44,6 +46,7 @@ const APPOINTMENTS_DATA = [
 
 export default function AppointmentsScreen() {
   const [activeFilter, setActiveFilter] = useState('All');
+  const { openSidebar } = useSidebar();
   const filters = ['All', 'Pending', 'Accepted', 'Completed'];
 
   const renderAppointmentItem = ({ item }: any) => (
@@ -96,7 +99,7 @@ export default function AppointmentsScreen() {
       
       {/* Header */}
       <View style={styles.header}>
-        <Pressable style={styles.headerButton}>
+        <Pressable onPress={openSidebar} style={styles.headerButton} hitSlop={15}>
           <Ionicons name="menu-outline" size={28} color="#1A3B2F" />
         </Pressable>
         <Text style={styles.headerTitle}>Appointments</Text>
@@ -270,8 +273,8 @@ const styles = StyleSheet.create({
   },
   rejectButton: {
     flex: 1,
-    height: 56,
-    borderRadius: 28,
+    height: SIZES.buttonHeight,
+    borderRadius: SIZES.buttonRadius,
     borderWidth: 1.5,
     borderColor: '#EF5350',
     alignItems: 'center',
@@ -284,8 +287,8 @@ const styles = StyleSheet.create({
   },
   acceptButton: {
     flex: 1,
-    height: 56,
-    borderRadius: 28,
+    height: SIZES.buttonHeight,
+    borderRadius: SIZES.buttonRadius,
     backgroundColor: '#FFD166',
     alignItems: 'center',
     justifyContent: 'center',

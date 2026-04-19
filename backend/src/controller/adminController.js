@@ -94,3 +94,12 @@ export const addGroomer = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+export const getGroomers = async (req, res) => {
+  try {
+    const groomers = await User.find({ role: "groomer" }).select("-password");
+    res.status(200).json(groomers);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch groomers.", error: error.message });
+  }
+};

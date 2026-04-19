@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, SafeAreaView, Pressable, ActivityIndicator, Platform, Alert } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, Pressable, RefreshControl, Platform, Image, ActivityIndicator, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
-import { Sidebar } from '@/components/Sidebar';
+import { useSidebar } from '@/context/SidebarContext';
 
 const AUTH_USER_KEY = "auth:user";
 const AUTH_STATUS_KEY = "auth:isSignedIn";
@@ -20,9 +20,18 @@ const CustomerDashboardContent = ({ user, onLogout, onExplore, onOpenSidebar }: 
         <Pressable onPress={onOpenSidebar} style={styles.menuButton} hitSlop={15}>
           <Ionicons name="menu-outline" size={28} color="#1A3B2F" />
         </Pressable>
-        <View>
-          <Text style={styles.welcomeText}>Welcome back,</Text>
-          <Text style={styles.userName}>{user?.fullName || 'Customer'}</Text>
+        <View style={styles.headerUserContainer}>
+          {user?.profilePicture ? (
+            <Image source={{ uri: user.profilePicture }} style={styles.headerAvatar} />
+          ) : (
+            <View style={styles.headerAvatarPlaceholder}>
+              <Ionicons name="person" size={18} color="#1A3B2F" />
+            </View>
+          )}
+          <View>
+            <Text style={styles.welcomeText}>Welcome back,</Text>
+            <Text style={styles.userName}>{user?.fullName || 'Customer'}</Text>
+          </View>
         </View>
       </View>
       <Pressable style={styles.logoutButton} onPress={onLogout} hitSlop={10}>
@@ -72,10 +81,7 @@ const GroomerDashboardContent = ({ user, onLogout, onOpenSidebar }: any) => (
         <Pressable onPress={onOpenSidebar} style={styles.menuButton} hitSlop={15}>
           <Ionicons name="menu-outline" size={28} color="#1A3B2F" />
         </Pressable>
-        <View>
-          <Text style={styles.welcomeText}>Professional Groomer,</Text>
-          <Text style={styles.userName}>{user?.fullName.split(' ')[0] || 'Groomer'}</Text>
-        </View>
+        <Text style={styles.dashboardTitle}>Dashboard</Text>
       </View>
       <Pressable style={styles.logoutButton} onPress={onLogout} hitSlop={10}>
         <Ionicons name="log-out-outline" size={18} color="#1A3B2F" />
@@ -88,9 +94,13 @@ const GroomerDashboardContent = ({ user, onLogout, onOpenSidebar }: any) => (
     <View style={styles.welcomeCardContainer}>
       <View style={styles.welcomeCardContent}>
         <View style={styles.groomerAvatarContainer}>
-          <View style={styles.groomerAvatarPlaceholder}>
-            <Ionicons name="person" size={50} color="#1A3B2F" />
-          </View>
+          {user?.profilePicture ? (
+            <Image source={{ uri: user.profilePicture }} style={styles.groomerAvatarImage} />
+          ) : (
+            <View style={styles.groomerAvatarPlaceholder}>
+              <Ionicons name="person" size={50} color="#1A3B2F" />
+            </View>
+          )}
         </View>
         <View style={styles.welcomeTextContainer}>
           <Text style={styles.welcomeGreeting}>Hello, {user?.fullName.split(' ')[0] || 'Groomer'}! 👋</Text>
@@ -165,17 +175,15 @@ const GroomerDashboardContent = ({ user, onLogout, onOpenSidebar }: any) => (
   </ScrollView>
 );
 
-const AdminDashboardContent = ({ user, onLogout, onOpenSidebar, onAddGroomer }: any) => (
+const AdminDashboardContent = ({ user, onLogout, onOpenSidebar, onAddGroomer, onManageGroomers }: any) => (
   <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+    {/* Header */}
     <View style={styles.header}>
       <View style={styles.headerLeft}>
         <Pressable onPress={onOpenSidebar} style={styles.menuButton} hitSlop={15}>
           <Ionicons name="menu-outline" size={28} color="#1A3B2F" />
         </Pressable>
-        <View>
-          <Text style={styles.welcomeText}>System Admin,</Text>
-          <Text style={styles.userName}>{user?.fullName || 'Admin'}</Text>
-        </View>
+        <Text style={styles.dashboardTitle}>Admin Panel</Text>
       </View>
       <Pressable style={styles.logoutButton} onPress={onLogout} hitSlop={10}>
         <Ionicons name="log-out-outline" size={18} color="#1A3B2F" />
@@ -183,52 +191,110 @@ const AdminDashboardContent = ({ user, onLogout, onOpenSidebar, onAddGroomer }: 
       </Pressable>
     </View>
 
-    <View style={[styles.roleBadge, { backgroundColor: 'rgba(211, 47, 47, 0.1)' }]}>
-      <Text style={[styles.roleText, { color: '#D32F2F' }]}>ADMINISTRATOR</Text>
-    </View>
-
-    <View style={styles.statsContainer}>
-      <View style={styles.statCard}>
-        <Text style={styles.statNumber}>1.2k</Text>
-        <Text style={styles.statLabel}>Users</Text>
-      </View>
-      <View style={styles.statCard}>
-        <Text style={styles.statNumber}>320</Text>
-        <Text style={styles.statLabel}>Appointments</Text>
-      </View>
-      <View style={styles.statCard}>
-        <Text style={styles.statNumber}>25</Text>
-        <Text style={styles.statLabel}>Groomers</Text>
-      </View>
-    </View>
-
-    <Text style={styles.sectionTitle}>Quick Actions</Text>
-    <View style={styles.quickActionsGrid}>
-      <Pressable style={styles.quickActionItem} onPress={onAddGroomer}>
-        <View style={[styles.actionIcon, { backgroundColor: 'rgba(46, 125, 50, 0.2)' }]}>
-          <Ionicons name="person-add-outline" size={24} color="#81C784" />
+    {/* Welcome Card */}
+    <View style={styles.welcomeCardContainer}>
+      <View style={styles.welcomeCardContent}>
+        <View style={styles.groomerAvatarContainer}>
+          {user?.profilePicture ? (
+            <Image source={{ uri: user.profilePicture }} style={styles.groomerAvatarImage} />
+          ) : (
+            <View style={styles.groomerAvatarPlaceholder}>
+              <Ionicons name="person" size={50} color="#1A3B2F" />
+            </View>
+          )}
         </View>
-        <Text style={styles.actionLabel}>Add Groomer</Text>
+        <View style={styles.welcomeTextContainer}>
+          <Text style={styles.welcomeGreeting}>Hello, {user?.fullName || 'Admin'}! 👋</Text>
+          <Text style={styles.welcomeSubtext}>System Administrator Access</Text>
+        </View>
+      </View>
+    </View>
+
+    {/* Stats Grid */}
+    <View style={styles.statsGrid}>
+      <View style={styles.statsRow}>
+        <View style={[styles.statBox, { backgroundColor: '#ffffff' }]}>
+          <View style={styles.statBoxHeader}>
+            <Text style={styles.statBoxNumber}>1.2k</Text>
+            <Ionicons name="people" size={20} color="#FFD166" />
+          </View>
+          <Text style={styles.statBoxLabel}>Total Users</Text>
+        </View>
+        <View style={[styles.statBox, { backgroundColor: '#ffffff' }]}>
+          <View style={styles.statBoxHeader}>
+            <Text style={styles.statBoxNumber}>320</Text>
+            <Ionicons name="calendar" size={20} color="#FFD166" />
+          </View>
+          <Text style={styles.statBoxLabel}>Appointments</Text>
+        </View>
+      </View>
+      <View style={styles.statsRow}>
+        <View style={[styles.statBox, { backgroundColor: '#ffffff' }]}>
+          <View style={styles.statBoxHeader}>
+            <Text style={styles.statBoxNumber}>25</Text>
+            <Ionicons name="cut" size={20} color="#FFD166" />
+          </View>
+          <Text style={styles.statBoxLabel}>Active Groomers</Text>
+        </View>
+        <View style={[styles.statBox, { backgroundColor: '#ffffff' }]}>
+          <View style={styles.statBoxHeader}>
+            <Text style={styles.statBoxNumber}>4.9</Text>
+            <Ionicons name="star" size={20} color="#FFD166" />
+          </View>
+          <Text style={styles.statBoxLabel}>System Rating</Text>
+        </View>
+      </View>
+    </View>
+
+    {/* Quick Actions */}
+    <View style={styles.sectionHeader}>
+      <Text style={styles.sectionTitleText}>Quick Actions</Text>
+    </View>
+    
+    <View style={styles.statsRow}>
+      <Pressable style={[styles.statBox, { backgroundColor: '#1A3B2F' }]} onPress={onAddGroomer}>
+        <View style={styles.statBoxHeader}>
+          <Ionicons name="person-add" size={22} color="#FFD166" />
+        </View>
+        <Text style={[styles.statBoxLabel, { color: '#ffffff' }]}>Add Groomer</Text>
+      </Pressable>
+      <Pressable style={[styles.statBox, { backgroundColor: '#FFD166' }]} onPress={onManageGroomers}>
+        <View style={styles.statBoxHeader}>
+          <Ionicons name="people" size={22} color="#1A3B2F" />
+        </View>
+        <Text style={[styles.statBoxLabel, { color: '#1A3B2F' }]}>Groomer Mgmt</Text>
       </Pressable>
     </View>
 
-    <View style={styles.managerCard}>
-      <View style={styles.cardHeader}>
-        <Text style={styles.cardTitle}>Recent Notifications</Text>
-        <Pressable><Text style={styles.viewAllText}>View All</Text></Pressable>
-      </View>
-      <View style={styles.activityItem}>
-        <View style={[styles.activityDot, { backgroundColor: '#FFD166' }]} />
-        <View>
-          <Text style={styles.activityText}>New groomer verification request</Text>
-          <Text style={styles.activityTime}>Paws & Palms Groomer</Text>
+    {/* Recent Activity */}
+    <View style={[styles.sectionHeader, { marginTop: 24 }]}>
+      <Text style={styles.sectionTitleText}>System Activity</Text>
+      <Pressable><Text style={styles.viewAllTextLink}>View Logs</Text></Pressable>
+    </View>
+
+    <View style={styles.scheduleList}>
+      <View style={styles.scheduleCard}>
+        <View style={styles.petAvatarSmall}>
+          <Ionicons name="notifications" size={24} color="#1A3B2F" />
+        </View>
+        <View style={styles.scheduleInfo}>
+          <Text style={styles.petNameText}>New Groomer Request</Text>
+          <Text style={styles.petBreedText}>Paws & Palms Grooming</Text>
+        </View>
+        <View style={styles.scheduleTimeStatus}>
+          <Text style={styles.scheduleTimeText}>10m ago</Text>
         </View>
       </View>
-      <View style={styles.activityItem}>
-        <View style={[styles.activityDot, { backgroundColor: '#FFD166' }]} />
-        <View>
-          <Text style={styles.activityText}>Security alert: Unusual login</Text>
-          <Text style={styles.activityTime}>Review required</Text>
+      <View style={styles.scheduleCard}>
+        <View style={styles.petAvatarSmall}>
+          <Ionicons name="shield-checkmark" size={24} color="#1A3B2F" />
+        </View>
+        <View style={styles.scheduleInfo}>
+          <Text style={styles.petNameText}>Security Update</Text>
+          <Text style={styles.petBreedText}>System firewall active</Text>
+        </View>
+        <View style={styles.scheduleTimeStatus}>
+          <Text style={styles.scheduleTimeText}>1h ago</Text>
         </View>
       </View>
     </View>
@@ -240,7 +306,7 @@ const AdminDashboardContent = ({ user, onLogout, onOpenSidebar, onAddGroomer }: 
 export default function DashboardScreen() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [isSidebarVisible, setSidebarVisible] = useState(false);
+  const { openSidebar } = useSidebar();
   const router = useRouter();
 
   useEffect(() => {
@@ -306,25 +372,25 @@ export default function DashboardScreen() {
           <AdminDashboardContent 
             user={user} 
             onLogout={handleLogout} 
-            onOpenSidebar={() => setSidebarVisible(true)}
+            onOpenSidebar={openSidebar}
             onAddGroomer={() => router.push('/admin/add-groomer')}
+            onManageGroomers={() => router.push('/admin/groomers')}
           />
         ) : user?.role === 'groomer' ? (
           <GroomerDashboardContent 
             user={user} 
             onLogout={handleLogout} 
-            onOpenSidebar={() => setSidebarVisible(true)}
+            onOpenSidebar={openSidebar}
           />
         ) : (
           <CustomerDashboardContent 
             user={user} 
             onLogout={handleLogout} 
             onExplore={() => router.push('/(tabs)/explore')} 
-            onOpenSidebar={() => setSidebarVisible(true)}
+            onOpenSidebar={openSidebar}
           />
         )}
       </SafeAreaView>
-      <Sidebar isVisible={isSidebarVisible} onClose={() => setSidebarVisible(false)} />
     </View>
   );
 }
@@ -352,7 +418,34 @@ const styles = StyleSheet.create({
   headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
+    gap: 12,
+  },
+  headerUserContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  headerAvatar: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#F0FAF5',
+  },
+  headerAvatarPlaceholder: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#F0FAF5',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(26, 59, 47, 0.05)',
+  },
+  dashboardTitle: {
+    fontSize: 20,
+    fontWeight: '900',
+    color: '#1A3B2F',
+    marginLeft: 4,
   },
   menuButton: {
     width: 44,
@@ -618,6 +711,11 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  groomerAvatarImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 45,
   },
   welcomeTextContainer: {
     flex: 1,

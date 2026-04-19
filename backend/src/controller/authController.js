@@ -21,6 +21,10 @@ const createAuthResponse = (user) => {
       email: user.email,
       phoneNumber: user.phoneNumber,
       role: user.role,
+      profilePicture: user.profilePicture,
+      experience: user.experience,
+      specialization: user.specialization,
+      aboutMe: user.aboutMe,
     },
   };
 };
@@ -133,7 +137,7 @@ export const loginUser = async (req, res) => {
 export const updateUserProfile = async (req, res) => {
   try {
     const { id } = req.params;
-    const { fullName, phoneNumber } = req.body;
+    const { fullName, phoneNumber, experience, specialization, aboutMe, profilePicture } = req.body;
 
     const normalizedName = typeof fullName === "string" ? fullName.trim() : "";
     const normalizedPhone = typeof phoneNumber === "string" ? phoneNumber.trim() : "";
@@ -142,17 +146,15 @@ export const updateUserProfile = async (req, res) => {
       return res.status(400).json({ message: "Full name and phone number are required." });
     }
 
-    if (!phonePattern.test(normalizedPhone)) {
-      return res.status(400).json({
-        message: "Please provide a valid phone number with 7 to 15 digits.",
-      });
-    }
-
     const updatedUser = await User.findByIdAndUpdate(
       id,
       {
         fullName: normalizedName,
         phoneNumber: normalizedPhone,
+        experience,
+        specialization,
+        aboutMe,
+        profilePicture,
       },
       { new: true, runValidators: true }
     );
@@ -169,6 +171,10 @@ export const updateUserProfile = async (req, res) => {
         email: updatedUser.email,
         phoneNumber: updatedUser.phoneNumber,
         role: updatedUser.role,
+        profilePicture: updatedUser.profilePicture,
+        experience: updatedUser.experience,
+        specialization: updatedUser.specialization,
+        aboutMe: updatedUser.aboutMe,
       },
     });
   } catch (error) {

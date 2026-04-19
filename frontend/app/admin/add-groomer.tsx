@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { API_BASE_URL } from '@/constants/api';
+import { SIZES } from '@/constants/spacing';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function AddGroomerScreen() {
@@ -300,8 +301,8 @@ const styles = StyleSheet.create({
   },
   submitButton: {
     backgroundColor: '#FFD166',
-    height: 56,
-    borderRadius: 28,
+    height: SIZES.buttonHeight,
+    borderRadius: SIZES.buttonRadius,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 12,

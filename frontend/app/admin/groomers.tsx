@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, SafeAreaView, Pressable, ActivityIndicator, Alert, Platform } from 'react-native';
+import { View, Text, StyleSheet, FlatList, SafeAreaView, Pressable, ActivityIndicator, Alert, Platform, Modal, ScrollView, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
@@ -9,6 +9,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 export default function GroomerManagementScreen() {
   const [groomers, setGroomers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedGroomer, setSelectedGroomer] = useState<any | null>(null);
+  const [modalVisible, setModalVisible] = useState(false);
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const router = useRouter();
 
@@ -23,7 +25,7 @@ export default function GroomerManagementScreen() {
         return;
       }
 
-      const response = await fetch(`${API_BASE_URL}/admin/users`, {
+      const response = await fetch(`${API_BASE_URL}/admin/groomers`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -34,8 +36,7 @@ export default function GroomerManagementScreen() {
       const data = await response.json();
       
       if (response.ok) {
-        // Filter only groomers
-        setGroomers(data.filter((u: any) => u.role === 'groomer'));
+        setGroomers(data);
       } else {
         throw new Error(data.message || "Failed to fetch groomers.");
       }
@@ -94,10 +95,20 @@ export default function GroomerManagementScreen() {
   };
 
   const renderItem = ({ item }: any) => (
-    <View style={[styles.card, !item.isActive && styles.cardInactive]}>
+    <Pressable 
+      style={[styles.card, !item.isActive && styles.cardInactive]}
+      onPress={() => {
+        setSelectedGroomer(item);
+        setModalVisible(true);
+      }}
+    >
       <View style={styles.cardHeader}>
         <View style={styles.avatar}>
-          <Ionicons name="cut" size={24} color="#1A3B2F" />
+          {item.profilePicture ? (
+            <Image source={{ uri: item.profilePicture }} style={styles.avatarImage} />
+          ) : (
+            <Ionicons name="person" size={24} color="#1A3B2F" />
+          )}
           {!item.isActive && (
             <View style={styles.inactiveAvatarOverlay}>
               <Ionicons name="lock-closed" size={12} color="#ffffff" />
@@ -136,15 +147,15 @@ export default function GroomerManagementScreen() {
           </Text>
         </View>
         <View style={styles.statItem}>
-          <Text style={styles.statLabel}>Rating</Text>
-          <Text style={styles.statValue}>4.8 ★</Text>
+          <Text style={styles.statLabel}>Specialization</Text>
+          <Text style={styles.statValue} numberOfLines={1}>{item.specialization || 'General'}</Text>
         </View>
         <View style={styles.statItem}>
-          <Text style={styles.statLabel}>Services</Text>
-          <Text style={styles.statValue}>12</Text>
+          <Text style={styles.statLabel}>Exp</Text>
+          <Text style={styles.statValue}>{item.experience || '0'}y</Text>
         </View>
       </View>
-    </View>
+    </Pressable>
   );
 
   return (
@@ -181,6 +192,84 @@ export default function GroomerManagementScreen() {
             }
           />
         )}
+
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Groomer Profile</Text>
+                <Pressable onPress={() => setModalVisible(false)} hitSlop={15}>
+                  <Ionicons name="close" size={24} color="#1A3B2F" />
+                </Pressable>
+              </View>
+
+              <ScrollView showsVerticalScrollIndicator={false}>
+                <View style={styles.modalBody}>
+                  <View style={styles.largeAvatar}>
+                    {selectedGroomer?.profilePicture ? (
+                      <Image source={{ uri: selectedGroomer.profilePicture }} style={styles.largeAvatarImage} />
+                    ) : (
+                      <Ionicons name="person" size={60} color="#1A3B2F" />
+                    )}
+                  </View>
+                  
+                  <Text style={styles.modalName}>{selectedGroomer?.fullName}</Text>
+                  <Text style={styles.modalRole}>Professional Groomer</Text>
+
+                  <View style={styles.detailGrid}>
+                    <View style={styles.detailItem}>
+                      <Ionicons name="call-outline" size={20} color="#FFD166" />
+                      <View>
+                        <Text style={styles.detailLabel}>Phone</Text>
+                        <Text style={styles.detailValue}>{selectedGroomer?.phoneNumber || 'Not provided'}</Text>
+                      </View>
+                    </View>
+                    <View style={styles.detailItem}>
+                      <Ionicons name="mail-outline" size={20} color="#FFD166" />
+                      <View>
+                        <Text style={styles.detailLabel}>Email</Text>
+                        <Text style={styles.detailValue}>{selectedGroomer?.email}</Text>
+                      </View>
+                    </View>
+                    <View style={styles.detailItem}>
+                      <Ionicons name="paw-outline" size={20} color="#FFD166" />
+                      <View>
+                        <Text style={styles.detailLabel}>Experience</Text>
+                        <Text style={styles.detailValue}>{selectedGroomer?.experience || '0'} Years</Text>
+                      </View>
+                    </View>
+                    <View style={styles.detailItem}>
+                      <Ionicons name="medal-outline" size={20} color="#FFD166" />
+                      <View>
+                        <Text style={styles.detailLabel}>Specialization</Text>
+                        <Text style={styles.detailValue}>{selectedGroomer?.specialization || 'All pets'}</Text>
+                      </View>
+                    </View>
+                  </View>
+
+                  <View style={styles.aboutSection}>
+                    <Text style={styles.aboutLabel}>About Groomer</Text>
+                    <Text style={styles.aboutText}>
+                      {selectedGroomer?.aboutMe || 'This groomer has not provided a description yet.'}
+                    </Text>
+                  </View>
+                </View>
+              </ScrollView>
+              
+              <Pressable 
+                style={styles.closeBtn} 
+                onPress={() => setModalVisible(false)}
+              >
+                <Text style={styles.closeBtnText}>Done</Text>
+              </Pressable>
+            </View>
+          </View>
+        </Modal>
       </SafeAreaView>
     </View>
   );
@@ -341,5 +430,121 @@ const styles = StyleSheet.create({
     color: 'rgba(26, 59, 47, 0.4)',
     fontSize: 16,
     fontWeight: '700',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#ffffff',
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    padding: 24,
+    maxHeight: '85%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: '#1A3B2F',
+  },
+  modalBody: {
+    alignItems: 'center',
+  },
+  largeAvatar: {
+    width: 120,
+    height: 120,
+    borderRadius: 40,
+    backgroundColor: '#FFD166',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+    overflow: 'hidden',
+  },
+  largeAvatarImage: {
+    width: '100%',
+    height: '100%',
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 18,
+  },
+  modalName: {
+    fontSize: 24,
+    fontWeight: '900',
+    color: '#1A3B2F',
+    marginBottom: 4,
+  },
+  modalRole: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#FFD166',
+    marginBottom: 24,
+    textTransform: 'uppercase',
+  },
+  detailGrid: {
+    width: '100%',
+    gap: 16,
+    marginBottom: 24,
+  },
+  detailItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: '#F0FAF5',
+    padding: 16,
+    borderRadius: 16,
+  },
+  detailLabel: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: 'rgba(26, 59, 47, 0.4)',
+    textTransform: 'uppercase',
+  },
+  detailValue: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#1A3B2F',
+  },
+  aboutSection: {
+    width: '100%',
+    backgroundColor: '#ffffff',
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(26, 59, 47, 0.05)',
+    marginBottom: 24,
+  },
+  aboutLabel: {
+    fontSize: 14,
+    fontWeight: '900',
+    color: '#1A3B2F',
+    marginBottom: 8,
+  },
+  aboutText: {
+    fontSize: 14,
+    lineHeight: 22,
+    color: 'rgba(26, 59, 47, 0.7)',
+    fontWeight: '600',
+  },
+  closeBtn: {
+    backgroundColor: '#1A3B2F',
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 8,
+  },
+  closeBtnText: {
+    fontSize: 16,
+    fontWeight: '900',
+    color: '#ffffff',
   },
 });

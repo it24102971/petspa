@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, Pressable, FlatList } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
+import { SIZES } from '@/constants/spacing';
+import { useSidebar } from '@/context/SidebarContext';
 
 const HISTORY_DATA = [
   {
@@ -40,6 +42,7 @@ const HISTORY_DATA = [
 
 export default function HistoryScreen() {
   const [activeFilter, setActiveFilter] = useState('All');
+  const { openSidebar } = useSidebar();
   const filters = ['All', 'Completed', 'Cancelled'];
 
   const renderHistoryItem = ({ item }: any) => (
@@ -85,7 +88,7 @@ export default function HistoryScreen() {
       
       {/* Header */}
       <View style={styles.header}>
-        <Pressable style={styles.headerButton}>
+        <Pressable onPress={openSidebar} style={styles.headerButton} hitSlop={15}>
           <Ionicons name="menu-outline" size={28} color="#1A3B2F" />
         </Pressable>
         <Text style={styles.headerTitle}>History</Text>

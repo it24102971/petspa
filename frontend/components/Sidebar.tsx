@@ -8,6 +8,7 @@ import {
   Dimensions,
   SafeAreaView,
   Platform,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -21,7 +22,7 @@ interface SidebarProps {
   onClose: () => void;
 }
 
-export const Sidebar = ({ isVisible, onClose }: SidebarProps) => {
+const Sidebar = ({ isVisible, onClose }: SidebarProps) => {
   const [user, setUser] = useState<any>(null);
   const [shouldRender, setShouldRender] = useState(isVisible);
   const router = useRouter();
@@ -94,7 +95,11 @@ export const Sidebar = ({ isVisible, onClose }: SidebarProps) => {
         <SafeAreaView style={styles.safeContent}>
           <View style={styles.sidebarHeader}>
             <View style={styles.avatarCircle}>
-              <Ionicons name="person" size={40} color="#1A3B2F" />
+              {user?.profilePicture ? (
+                <Image source={{ uri: user.profilePicture }} style={styles.sidebarAvatarImage} />
+              ) : (
+                <Ionicons name="person" size={40} color="#1A3B2F" />
+              )}
             </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.sidebarName} numberOfLines={2}>{user?.fullName || 'Guest'}</Text>
@@ -118,9 +123,21 @@ export const Sidebar = ({ isVisible, onClose }: SidebarProps) => {
               />
             )}
             <SidebarItem
-              icon="bookmark-outline"
+              icon="calendar-outline"
               label={user?.role === 'groomer' ? "My Appointments" : "My Bookings"}
               onPress={() => handleNavigate(user?.role === 'groomer' ? '/(tabs)/appointments' : '/(tabs)/history')}
+            />
+            {user?.role === 'groomer' && (
+              <SidebarItem
+                icon="time-outline"
+                label="Appointment History"
+                onPress={() => handleNavigate('/(tabs)/history')}
+              />
+            )}
+            <SidebarItem
+              icon="person-outline"
+              label="My Profile"
+              onPress={() => handleNavigate('/(tabs)/profile')}
             />
             <SidebarItem
               icon="notifications-outline"
@@ -228,6 +245,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: 'rgba(26, 59, 47, 0.1)',
+    overflow: 'hidden',
+  },
+  sidebarAvatarImage: {
+    width: '100%',
+    height: '100%',
   },
   sidebarName: {
     fontSize: 20,
@@ -289,3 +311,5 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
+
+export default Sidebar;

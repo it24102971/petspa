@@ -18,6 +18,7 @@ import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { API_BASE_URL } from "@/constants/api";
+import { SIZES } from "@/constants/spacing";
 
 const AUTH_STATUS_KEY = "auth:isSignedIn";
 const ONBOARDING_SEEN_KEY = "onboarding:seen";
@@ -273,9 +274,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   button: {
-    backgroundColor: "#FFD166", // Travel-friendly yellow
-    height: 56,
-    borderRadius: 28,
+    backgroundColor: "#FFD166",
+    height: SIZES.buttonHeight,
+    borderRadius: SIZES.buttonRadius,
     alignItems: "center",
     justifyContent: "center",
     elevation: 4,

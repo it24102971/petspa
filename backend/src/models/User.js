@@ -40,6 +40,13 @@ const userSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    aboutMe: {
+      type: String,
+      trim: true,
+    },
+    profilePicture: {
+      type: String, // Store as base64 or URL
+    },
     role: {
       type: String,
       enum: ["customer", "admin", "groomer"],

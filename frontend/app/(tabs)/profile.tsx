@@ -16,11 +16,16 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { API_BASE_URL } from '@/constants/api';
 import { StatusBar } from 'expo-status-bar';
+import * as ImagePicker from 'expo-image-picker';
+import { SIZES } from '@/constants/spacing';
+import { useSidebar } from '@/context/SidebarContext';
+import { Image } from 'react-native';
 
 const AUTH_USER_KEY = 'auth:user';
 const AUTH_TOKEN_KEY = 'auth:token';
 
 export default function ProfileScreen() {
+  const { openSidebar } = useSidebar();
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [user, setUser] = useState<any>(null);
@@ -31,6 +36,7 @@ export default function ProfileScreen() {
   const [experience, setExperience] = useState('5');
   const [specialization, setSpecialization] = useState('Dog Grooming');
   const [aboutMe, setAboutMe] = useState('Professional pet groomer with 5 years of experience.');
+  const [image, setImage] = useState<string | null>(null);
   
   const router = useRouter();
 
@@ -45,30 +51,62 @@ export default function ProfileScreen() {
         // For demo purposes, we'll keep the other fields as defaults if they don't exist in user object
         if (parsedUser.experience) setExperience(parsedUser.experience);
         if (parsedUser.specialization) setSpecialization(parsedUser.specialization);
+        if (parsedUser.profilePicture) setImage(parsedUser.profilePicture);
       }
     };
 
     loadUser();
   }, []);
 
+  const pickImage = async () => {
+    // No permissions request is necessary for launching the image library
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
+      base64: true,
+    });
+
+    if (!result.canceled) {
+      setImage(`data:image/jpeg;base64,${result.assets[0].base64}`);
+    }
+  };
+
   const handleSaveProfile = async () => {
     try {
       setIsSaving(true);
-      // Simulate API call and state update
-      const updatedUser = { 
-        ...user, 
-        fullName, 
-        phoneNumber, 
-        experience, 
-        specialization, 
-        aboutMe 
-      };
-      setUser(updatedUser);
-      await AsyncStorage.setItem(AUTH_USER_KEY, JSON.stringify(updatedUser));
-      setIsEditing(false);
-      Alert.alert('Success', 'Profile updated successfully!');
+      const token = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
+      
+      const response = await fetch(`${API_BASE_URL}/auth/profile/${user.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          fullName,
+          phoneNumber,
+          experience,
+          specialization,
+          aboutMe,
+          profilePicture: image,
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setUser(data.user);
+        await AsyncStorage.setItem(AUTH_USER_KEY, JSON.stringify(data.user));
+        setIsEditing(false);
+        Alert.alert('Success', 'Profile updated successfully!');
+      } else {
+        Alert.alert('Error', data.message || 'Failed to update profile.');
+      }
     } catch (error) {
-      Alert.alert('Error', 'Failed to update profile.');
+      console.error(error);
+      Alert.alert('Error', 'Failed to update profile. Please check your connection.');
     } finally {
       setIsSaving(false);
     }
@@ -91,13 +129,17 @@ export default function ProfileScreen() {
             <View style={styles.editSection}>
               <Text style={styles.sectionLabel}>Profile Picture</Text>
               <View style={styles.editAvatarContainer}>
-                <View style={styles.avatarLarge}>
-                  <Ionicons name="person" size={60} color="#666" />
+                <Pressable onPress={pickImage} style={styles.avatarLarge}>
+                  {image ? (
+                    <Image source={{ uri: image }} style={styles.avatarImage} />
+                  ) : (
+                    <Ionicons name="person" size={60} color="#666" />
+                  )}
                   <View style={styles.cameraOverlay}>
                     <Ionicons name="camera" size={16} color="#fff" />
                   </View>
-                </View>
-                <Pressable style={styles.uploadButton}>
+                </Pressable>
+                <Pressable style={styles.uploadButton} onPress={pickImage}>
                   <Text style={styles.uploadButtonText}>Upload New Photo</Text>
                 </Pressable>
               </View>
@@ -170,8 +212,8 @@ export default function ProfileScreen() {
       <SafeAreaView style={{ flex: 1 }}>
         {/* Header */}
         <View style={styles.header}>
-          <Pressable style={styles.headerButton}>
-            <Ionicons name="chevron-back" size={24} color="#000" />
+          <Pressable onPress={openSidebar} style={styles.headerButton} hitSlop={15}>
+            <Ionicons name="menu-outline" size={28} color="#000" />
           </Pressable>
           <Text style={styles.headerTitle}>Profile</Text>
           <Pressable style={styles.headerButton}>
@@ -183,7 +225,11 @@ export default function ProfileScreen() {
           {/* Profile Header Card */}
           <View style={styles.profileHeaderCard}>
             <View style={styles.avatarLarge}>
-              <Ionicons name="person" size={60} color="#666" />
+              {image ? (
+                <Image source={{ uri: image }} style={styles.avatarImage} />
+              ) : (
+                <Ionicons name="person" size={60} color="#666" />
+              )}
               <View style={styles.cameraOverlay}>
                 <Ionicons name="camera" size={16} color="#fff" />
               </View>
@@ -277,6 +323,12 @@ const styles = StyleSheet.create({
     borderColor: '#eee',
     position: 'relative',
     marginBottom: 16,
+    overflow: 'hidden',
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 70,
   },
   cameraOverlay: {
     position: 'absolute',
@@ -423,8 +475,8 @@ const styles = StyleSheet.create({
   },
   saveChangesButton: {
     backgroundColor: '#FFD166',
-    height: 56,
-    borderRadius: 28,
+    height: SIZES.buttonHeight,
+    borderRadius: SIZES.buttonRadius,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 10,
