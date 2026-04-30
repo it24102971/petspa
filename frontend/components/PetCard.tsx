@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 interface PetCardProps {
@@ -7,35 +7,53 @@ interface PetCardProps {
   type: string;
   breed?: string;
   age: number;
-  weight: number;
+  cutenessLevel: number;
+  imageUrl?: string;
+  onEdit?: () => void;
   onDelete?: () => void;
 }
 
-export default function PetCard({ name, type, breed, age, weight, onDelete }: PetCardProps) {
-  const getIcon = () => {
+export default function PetCard({ name, type, breed, age, cutenessLevel, imageUrl, onEdit, onDelete }: PetCardProps) {
+  const getEmoji = () => {
     switch (type.toLowerCase()) {
-      case 'dog': return 'paw';
-      case 'cat': return 'logo-octocat';
-      case 'bird': return 'airplane-outline';
-      default: return 'paw';
+      case 'dog': return '🐶';
+      case 'cat': return '🐱';
+      case 'bird': return '🦜';
+      case 'fish': return '🐠';
+      case 'rabbit': return '🐰';
+      case 'hamster': return '🐹';
+      case 'turtle': return '🐢';
+      case 'guinea pig': return '🐹';
+      default: return '🐾';
     }
   };
 
   return (
     <View style={styles.card}>
       <View style={styles.iconContainer}>
-        <Ionicons name={getIcon() as any} size={24} color="#1A3B2F" />
+        {imageUrl ? (
+          <Image source={{ uri: imageUrl }} style={styles.image} />
+        ) : (
+          <Text style={styles.emoji}>{getEmoji()}</Text>
+        )}
       </View>
       <View style={styles.info}>
         <Text style={styles.name}>{name}</Text>
         <Text style={styles.breed}>{breed || 'Mixed Breed'} • {type}</Text>
-        <Text style={styles.details}>{age} years • {weight} kg</Text>
+        <Text style={styles.details}>{age} years • {cutenessLevel}/10 Cuteness</Text>
       </View>
-      {onDelete && (
-        <Pressable onPress={onDelete} style={styles.deleteBtn}>
-          <Ionicons name="trash-outline" size={20} color="#FF6B6B" />
-        </Pressable>
-      )}
+      <View style={styles.actions}>
+        {onEdit && (
+          <Pressable onPress={onEdit} style={styles.actionBtn}>
+            <Ionicons name="pencil" size={20} color="#FFD166" />
+          </Pressable>
+        )}
+        {onDelete && (
+          <Pressable onPress={onDelete} style={styles.actionBtn}>
+            <Ionicons name="trash-outline" size={20} color="#FF6B6B" />
+          </Pressable>
+        )}
+      </View>
     </View>
   );
 }
@@ -59,6 +77,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 16,
+    overflow: 'hidden',
+  },
+  emoji: {
+    fontSize: 26,
+  },
+  image: {
+    width: '100%',
+    height: '100%',
   },
   info: {
     flex: 1,
@@ -81,7 +107,11 @@ const styles = StyleSheet.create({
     marginTop: 4,
     textTransform: 'uppercase',
   },
-  deleteBtn: {
+  actions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  actionBtn: {
     padding: 8,
   },
 });

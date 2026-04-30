@@ -6,6 +6,12 @@ const petSchema = new mongoose.Schema(
 			type: String,
 			required: true,
 		},
+		type: {
+			type: String,
+			required: true,
+			enum: ["Dog", "Cat", "Bird", "Rabbit", "Hamster", "Fish", "Turtle", "Guinea Pig", "Other"],
+			default: "Dog",
+		},
 		breed: {
 			type: String,
 			required: true,
@@ -18,6 +24,15 @@ const petSchema = new mongoose.Schema(
 			type: Number,
 			required: true,
 			default: 10,
+		},
+		imageUrl: {
+			type: String,
+			default: null,
+		},
+		owner: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "User",
+			required: true,
 		},
 	},
 	{ timestamps: true }
