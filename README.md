@@ -88,6 +88,3 @@ Paws-and-Palms-Pet-Spa/
 
 ---
 
-## ⚠️ Important Notes
-- **Environment**: Never share your `.env` file or commit it to version control.
-- **Localhost**: When connecting the frontend to the backend, use your computer's **Local IP Address** (e.g., `192.168.x.x`) instead of `localhost` in your API configuration
