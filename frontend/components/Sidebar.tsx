@@ -142,7 +142,7 @@ const Sidebar = ({ isVisible, onClose }: SidebarProps) => {
             <SidebarItem
               icon="calendar-outline"
               label={user?.role === 'groomer' ? "My Appointments" : "My Bookings"}
-              onPress={() => handleNavigate(user?.role === 'groomer' ? '/(tabs)/appointments' : '/(tabs)/history')}
+              onPress={() => handleNavigate(user?.role === 'groomer' ? '/groomer/appointments' : '/(tabs)/history')}
             />
             {user?.role === 'groomer' && (
               <SidebarItem
@@ -223,7 +223,6 @@ const Sidebar = ({ isVisible, onClose }: SidebarProps) => {
               onPress={() => {}}
             />
 
-          </ScrollView>
 
           <View style={styles.footer}>
             <Pressable 

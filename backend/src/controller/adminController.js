@@ -101,9 +101,7 @@ export const getAllPets = async (req, res) => {
 
     if (search) {
       const searchRegex = new RegExp(search, "i");
-      // Search by pet name OR owner name (via population or sub-query)
-      // Since owner is a reference, we might need a more complex query or filter in memory.
-      // For now, let's search by pet name and breed.
+
       filter.$or = [
         { name: searchRegex },
         { breed: searchRegex }

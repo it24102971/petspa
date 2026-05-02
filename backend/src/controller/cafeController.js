@@ -1,40 +1,7 @@
 import CafeItem from "../models/CafeItem.js";
 import CafeOrder from "../models/CafeOrder.js";
 
-const defaultCafeItems = [
-  {
-    name: "Puppyccino",
-    description: "Safe whipped cream treat for your furry friend.",
-    price: 450,
-    category: "Drink",
-    imageUrl: "https://images.unsplash.com/photo-1544411047-c4915842127b?auto=format&fit=crop&w=900&q=80",
-  },
-  {
-    name: "Paw-berry Smoothie",
-    description: "Berry mix smoothie safe for pets and owners.",
-    price: 850,
-    category: "Drink",
-    imageUrl: "https://images.unsplash.com/photo-1553530666-ba11a7da3888?auto=format&fit=crop&w=900&q=80",
-  },
-  {
-    name: "Golden Bone Cookie",
-    description: "Organic peanut butter and honey baked bone.",
-    price: 300,
-    category: "Snack",
-    imageUrl: "https://images.unsplash.com/photo-1582791078544-183f9fde673c?auto=format&fit=crop&w=900&q=80",
-  },
-];
 
-const ensureDefaultItems = async () => {
-  const count = await CafeItem.countDocuments();
-  if (count === 0) {
-    await CafeItem.insertMany(defaultCafeItems);
-  }
-};
-
-export const getCafeItems = async (_req, res) => {
-  try {
-    await ensureDefaultItems();
     const items = await CafeItem.find({ isAvailable: true }).sort({ createdAt: -1 });
     res.status(200).json(items);
   } catch (error) {
@@ -42,34 +9,6 @@ export const getCafeItems = async (_req, res) => {
   }
 };
 
-export const createCafeItem = async (req, res) => {
-  try {
-    const item = await CafeItem.create(req.body);
-    res.status(201).json(item);
-  } catch (error) {
-    res.status(500).json({ message: "Error creating cafe item", error: error.message });
-  }
-};
-
-export const updateCafeItem = async (req, res) => {
-  try {
-    const item = await CafeItem.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!item) return res.status(404).json({ message: "Item not found" });
-    res.status(200).json(item);
-  } catch (error) {
-    res.status(500).json({ message: "Error updating cafe item", error: error.message });
-  }
-};
-
-export const deleteCafeItem = async (req, res) => {
-  try {
-    const item = await CafeItem.findByIdAndDelete(req.params.id);
-    if (!item) return res.status(404).json({ message: "Item not found" });
-    res.status(200).json({ message: "Item removed" });
-  } catch (error) {
-    res.status(500).json({ message: "Error deleting cafe item", error: error.message });
-  }
-};
 
 export const placeOrder = async (req, res) => {
   try {

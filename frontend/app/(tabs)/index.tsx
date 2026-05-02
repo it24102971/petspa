@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, Pressable, RefreshControl, Platform, Image, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, Pressable, RefreshControl, Platform, Image, ActivityIndicator, Alert, Modal, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { router, useRouter } from 'expo-router';
+ main
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { useSidebar } from '@/context/SidebarContext';
@@ -21,7 +21,7 @@ const getImageUrl = (url: string | null | undefined) => {
 
 // --- Components ---
 
-const CustomerDashboardContent = ({ user, onLogout, onExplore, onOpenSidebar, onPets }: any) => (
+
   <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
     <View style={styles.header}>
       <View style={styles.headerLeft}>
@@ -73,11 +73,21 @@ const CustomerDashboardContent = ({ user, onLogout, onExplore, onOpenSidebar, on
       <Pressable style={styles.actionButton} onPress={onExplore}>
         <Text style={styles.actionButtonText}>Book Appointment</Text>
       </Pressable>
+      <Pressable 
+        style={[styles.actionButton, { backgroundColor: '#1A3B2F', marginTop: 12 }]} 
+        onPress={onCafe}
+      >
+        <Text style={[styles.actionButtonText, { color: '#ffffff' }]}>Pet Cafe</Text>
+      </Pressable>
     </View>
   </ScrollView>
 );
 
-const GroomerDashboardContent = ({ user, onLogout, onOpenSidebar }: any) => (
+const GroomerDashboardContent = ({ user, onLogout, onOpenSidebar, stats, router, notifications, onMarkAsRead }: any) => {
+  const unreadCount = notifications.filter((n: any) => !n.isRead).length;
+  const [showNotifications, setShowNotifications] = useState(false);
+
+  return (
   <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
     {/* Header */}
     <View style={styles.header}>
@@ -87,7 +97,52 @@ const GroomerDashboardContent = ({ user, onLogout, onOpenSidebar }: any) => (
         </Pressable>
         <Text style={styles.dashboardTitle}>Dashboard</Text>
       </View>
+
     </View>
+
+    {/* Notification Modal */}
+    <Modal
+      visible={showNotifications}
+      animationType="slide"
+      transparent={true}
+      onRequestClose={() => setShowNotifications(false)}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.notificationModal}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Notifications</Text>
+            <TouchableOpacity onPress={() => setShowNotifications(false)}>
+              <Ionicons name="close" size={24} color="#1A3B2F" />
+            </TouchableOpacity>
+          </View>
+          <ScrollView style={styles.notificationList}>
+            {notifications.length > 0 ? (
+              notifications.map((notif: any) => (
+                <View key={notif._id} style={styles.notificationItem}>
+                  <View style={[styles.notifIcon, { backgroundColor: notif.type === 'booking' ? '#E8F5E9' : '#FFF3E0' }]}>
+                    <Ionicons 
+                      name={notif.type === 'booking' ? "calendar" : "notifications"} 
+                      size={20} 
+                      color={notif.type === 'booking' ? "#4CAF50" : "#FF9800"} 
+                    />
+                  </View>
+                  <View style={styles.notifText}>
+                    <Text style={styles.notifTitle}>{notif.title}</Text>
+                    <Text style={styles.notifMessage}>{notif.message}</Text>
+                    <Text style={styles.notifTime}>{new Date(notif.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
+                  </View>
+                </View>
+              ))
+            ) : (
+              <View style={styles.emptyNotif}>
+                <Ionicons name="notifications-off-outline" size={40} color="#ccc" />
+                <Text style={styles.emptyNotifText}>No notifications yet</Text>
+              </View>
+            )}
+          </ScrollView>
+        </View>
+      </View>
+    </Modal>
 
 
     {/* Welcome Card */}
@@ -127,18 +182,45 @@ const GroomerDashboardContent = ({ user, onLogout, onOpenSidebar }: any) => (
       <View style={styles.statsRow}>
         <View style={[styles.statBox, { backgroundColor: '#E8F5E9' }]}>
           <View style={styles.statBoxHeader}>
-            <Text style={styles.statBoxNumber}>5</Text>
+            <Text style={styles.statBoxNumber}>{stats?.todayCount || 0}</Text>
             <Ionicons name="calendar" size={20} color="#4CAF50" />
           </View>
           <Text style={styles.statBoxLabel}>Today's Appointments</Text>
         </View>
         <View style={[styles.statBox, { backgroundColor: '#E3F2FD' }]}>
           <View style={styles.statBoxHeader}>
-            <Text style={styles.statBoxNumber}>32</Text>
-            <Ionicons name="checkmark-circle" size={20} color="#2196F3" />
+            <Text style={styles.statBoxNumber}>{stats?.pendingVerified || 0}</Text>
+            <Ionicons name="alert-circle" size={20} color="#2196F3" />
           </View>
-          <Text style={styles.statBoxLabel}>Completed Jobs</Text>
+          <Text style={styles.statBoxLabel}>Available Jobs</Text>
         </View>
+      </View>
+    </View>
+
+    {/* Manage Work */}
+    <View style={styles.manageSection}>
+      <Text style={styles.sectionTitle}>Manage Your Work</Text>
+      <View style={styles.actionCards}>
+        <Pressable 
+          style={styles.manageActionCard} 
+          onPress={() => router.push({ pathname: '/groomer/appointments', params: { type: 'schedule' } } as any)}
+        >
+          <View style={[styles.manageActionIcon, { backgroundColor: '#FFD16620' }]}>
+            <Ionicons name="calendar-outline" size={24} color="#FFD166" />
+          </View>
+          <Text style={styles.actionTitle}>My Schedule</Text>
+          <Text style={styles.actionSub}>View accepted jobs</Text>
+        </Pressable>
+        <Pressable 
+          style={styles.manageActionCard} 
+          onPress={() => router.push({ pathname: '/groomer/appointments', params: { type: 'jobs' } } as any)}
+        >
+          <View style={[styles.manageActionIcon, { backgroundColor: '#1A3B2F20' }]}>
+            <Ionicons name="search-outline" size={24} color="#1A3B2F" />
+          </View>
+          <Text style={styles.actionTitle}>Find Jobs</Text>
+          <Text style={styles.actionSub}>Browse verified bookings</Text>
+        </Pressable>
       </View>
     </View>
 
@@ -173,9 +255,10 @@ const GroomerDashboardContent = ({ user, onLogout, onOpenSidebar }: any) => (
       ))}
     </View>
   </ScrollView>
-);
+  );
+};
 
-const AdminDashboardContent = ({ user, onLogout, onOpenSidebar, onAddGroomer, onManageGroomers }: any) => (
+const AdminDashboardContent = ({ user, onLogout, onOpenSidebar, onAddGroomer, onManageGroomers, router }: any) => (
   <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
     {/* Header */}
     <View style={styles.header}>
@@ -318,24 +401,62 @@ const AdminDashboardContent = ({ user, onLogout, onOpenSidebar, onAddGroomer, on
 export default function DashboardScreen() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [groomerStats, setGroomerStats] = useState<any>(null);
+  const [notifications, setNotifications] = useState<any[]>([]);
   const { openSidebar } = useSidebar();
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const userData = await AsyncStorage.getItem(AUTH_USER_KEY);
-        if (userData) {
-          setUser(JSON.parse(userData));
+  const markNotificationsRead = async () => {
+    try {
+      const token = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
+      await fetch(`${API_BASE_URL}/notifications/read-all`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+    } catch (error) {
+      console.error("Mark as read failed:", error);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      const fetchUserAndStats = async () => {
+        try {
+          const userData = await AsyncStorage.getItem(AUTH_USER_KEY);
+          const token = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
+          
+          if (userData) {
+            const parsedUser = JSON.parse(userData);
+            setUser(parsedUser);
+
+            if (parsedUser.role === 'groomer' && token) {
+              const statsRes = await fetch(`${API_BASE_URL}/spa-services/groomer-stats`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+              });
+              if (statsRes.ok) {
+                const statsData = await statsRes.json();
+                setGroomerStats(statsData);
+              }
+
+              const notifRes = await fetch(`${API_BASE_URL}/notifications`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+              });
+              if (notifRes.ok) {
+                const notifData = await notifRes.json();
+                setNotifications(notifData);
+              }
+            }
+          }
+        } catch (error) {
+          console.error("Fetch dashboard data failed:", error);
+        } finally {
+          setLoading(false);
         }
-      } catch (error) {
-        console.error("Fetch user failed:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchUser();
-  }, []);
+      };
+      fetchUserAndStats();
+    }, [])
+  );
 
   const handleLogout = async () => {
     Alert.alert(
@@ -387,20 +508,20 @@ export default function DashboardScreen() {
             onOpenSidebar={openSidebar}
             onAddGroomer={() => router.push('/admin/add-groomer')}
             onManageGroomers={() => router.push('/admin/groomers')}
+            router={router}
           />
         ) : user?.role === 'groomer' ? (
           <GroomerDashboardContent
             user={user}
             onLogout={handleLogout}
             onOpenSidebar={openSidebar}
+            stats={groomerStats}
+            router={router}
+            notifications={notifications}
+            onMarkAsRead={markNotificationsRead}
           />
         ) : (
-          <CustomerDashboardContent
-            user={user}
-            onLogout={handleLogout}
-            onExplore={() => router.push('/(tabs)/explore')}
-            onOpenSidebar={openSidebar}
-            onPets={() => router.push('/pets')}
+
           />
         )}
       </SafeAreaView>
@@ -727,16 +848,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginLeft: -4, // Adjust for notification button alignment
   },
-  notificationButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    backgroundColor: '#ffffff',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(26, 59, 47, 0.05)',
-  },
   welcomeCardContainer: {
     backgroundColor: '#ffffff',
     borderRadius: 24,
@@ -889,5 +1000,141 @@ const styles = StyleSheet.create({
   statusBadgeTextSmall: {
     fontSize: 11,
     fontWeight: '900',
+  },
+  manageSection: {
+    marginTop: 30,
+    paddingHorizontal: 0,
+  },
+  actionCards: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    gap: 15,
+  },
+  manageActionCard: {
+    flex: 1,
+    backgroundColor: '#fff',
+    borderRadius: 24,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: '#eee',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  manageActionIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 15,
+  },
+  actionTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#1A3B2F',
+    marginBottom: 4,
+  },
+  actionSub: {
+    fontSize: 12,
+    color: '#999',
+    fontWeight: '600',
+  },
+  // Notification Styles
+  notificationButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: '#ffffff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(26, 59, 47, 0.05)',
+    position: 'relative',
+  },
+  notificationBadge: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#FF5252',
+    borderWidth: 2,
+    borderColor: '#ffffff',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  notificationModal: {
+    backgroundColor: '#ffffff',
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    height: '70%',
+    padding: 24,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '900',
+    color: '#1A3B2F',
+  },
+  notificationList: {
+    flex: 1,
+  },
+  notificationItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  notifIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 16,
+  },
+  notifText: {
+    flex: 1,
+  },
+  notifTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#1A3B2F',
+    marginBottom: 2,
+  },
+  notifMessage: {
+    fontSize: 13,
+    color: 'rgba(26, 59, 47, 0.6)',
+    lineHeight: 18,
+    marginBottom: 4,
+  },
+  notifTime: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#999',
+  },
+  emptyNotif: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 60,
+  },
+  emptyNotifText: {
+    marginTop: 16,
+    fontSize: 14,
+    color: '#999',
+    fontWeight: '600',
   },
 });
