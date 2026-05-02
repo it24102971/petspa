@@ -16,6 +16,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { API_BASE_URL } from '@/constants/api';
 import { StatusBar } from 'expo-status-bar';
+import PetsSection from '@/components/PetsSection';
 
 const AUTH_USER_KEY = 'auth:user';
 const AUTH_STATUS_KEY = 'auth:isSignedIn';
@@ -228,6 +229,8 @@ export default function ProfileScreen() {
               </View>
             )}
           </View>
+          
+          <PetsSection />
           
           <Pressable style={styles.supportCard}>
             <View style={styles.supportIcon}>
