@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { useSidebar } from '@/context/SidebarContext';
+import { API_BASE_URL } from '@/constants/api';
 
 const AUTH_USER_KEY = "auth:user";
 const AUTH_STATUS_KEY = "auth:isSignedIn";
@@ -208,29 +209,38 @@ const AdminDashboardContent = ({ user, onLogout, onOpenSidebar, onAddGroomer, on
     {/* Stats Grid */}
     <View style={styles.statsGrid}>
       <View style={styles.statsRow}>
-        <View style={[styles.statBox, { backgroundColor: '#ffffff' }]}>
+        <Pressable 
+          style={[styles.statBox, { backgroundColor: '#ffffff' }]}
+          onPress={() => router.push('/admin/users')}
+        >
           <View style={styles.statBoxHeader}>
             <Text style={styles.statBoxNumber}>1.2k</Text>
             <Ionicons name="people" size={20} color="#FFD166" />
           </View>
           <Text style={styles.statBoxLabel}>Total Users</Text>
-        </View>
-        <View style={[styles.statBox, { backgroundColor: '#ffffff' }]}>
+        </Pressable>
+        <Pressable 
+          style={[styles.statBox, { backgroundColor: '#ffffff' }]}
+          onPress={() => router.push('/admin/appointments')}
+        >
           <View style={styles.statBoxHeader}>
             <Text style={styles.statBoxNumber}>320</Text>
             <Ionicons name="calendar" size={20} color="#FFD166" />
           </View>
           <Text style={styles.statBoxLabel}>Appointments</Text>
-        </View>
+        </Pressable>
       </View>
       <View style={styles.statsRow}>
-        <View style={[styles.statBox, { backgroundColor: '#ffffff' }]}>
+        <Pressable 
+          style={[styles.statBox, { backgroundColor: '#ffffff' }]}
+          onPress={() => router.push('/admin/groomers')}
+        >
           <View style={styles.statBoxHeader}>
             <Text style={styles.statBoxNumber}>25</Text>
             <Ionicons name="cut" size={20} color="#FFD166" />
           </View>
           <Text style={styles.statBoxLabel}>Active Groomers</Text>
-        </View>
+        </Pressable>
         <View style={[styles.statBox, { backgroundColor: '#ffffff' }]}>
           <View style={styles.statBoxHeader}>
             <Text style={styles.statBoxNumber}>4.9</Text>
@@ -242,6 +252,25 @@ const AdminDashboardContent = ({ user, onLogout, onOpenSidebar, onAddGroomer, on
     </View>
 
 
+
+    {/* Management Section */}
+    <View style={[styles.sectionHeader, { marginTop: 24 }]}>
+      <Text style={styles.sectionTitleText}>Management</Text>
+    </View>
+    <View style={styles.managementGrid}>
+      <Pressable style={styles.managementCard} onPress={() => router.push('/admin/pets')}>
+        <View style={[styles.managementIconContainer, { backgroundColor: '#FFD166' }]}>
+          <Ionicons name="paw" size={24} color="#1A3B2F" />
+        </View>
+        <Text style={styles.managementLabel}>Pet Database</Text>
+      </Pressable>
+      <Pressable style={styles.managementCard} onPress={onAddGroomer}>
+        <View style={[styles.managementIconContainer, { backgroundColor: '#1A3B2F' }]}>
+          <Ionicons name="person-add" size={24} color="#ffffff" />
+        </View>
+        <Text style={styles.managementLabel}>New Groomer</Text>
+      </Pressable>
+    </View>
 
     {/* Recent Activity */}
     <View style={[styles.sectionHeader, { marginTop: 24 }]}>
@@ -386,6 +415,38 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingTop: Platform.OS === 'ios' ? 10 : 30,
     paddingBottom: 40,
+  },
+  managementGrid: {
+    flexDirection: 'row',
+    gap: 16,
+    marginTop: 12,
+  },
+  managementCard: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+    borderRadius: 24,
+    padding: 20,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(26, 59, 47, 0.08)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.02,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  managementIconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  managementLabel: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#1A3B2F',
   },
   header: {
     flexDirection: 'row',
