@@ -27,7 +27,6 @@ const AUTH_USER_KEY = "auth:user";
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { height: windowHeight } = useWindowDimensions();
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -162,7 +161,7 @@ export default function LoginScreen() {
                 </Pressable>
 
                 <View style={styles.footer}>
-                  <Text style={styles.footerText}>DON'T HAVE AN ACCOUNT? </Text>
+                  <Text style={styles.footerText}>DON&apos;T HAVE AN ACCOUNT? </Text>
                   <Pressable onPress={() => router.push("/register")}>
                     <Text style={styles.footerLink}>REGISTER</Text>
                   </Pressable>
