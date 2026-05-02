@@ -169,11 +169,14 @@ export default function PetProfileScreen() {
       <StatusBar style="dark" />
       <SafeAreaView style={{ flex: 1 }}>
         <View style={styles.header}>
-          <View style={styles.headerTitleRow}>
-            <Pressable onPress={() => router.back()} style={styles.backButton}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            <Pressable onPress={() => router.back()} style={styles.backButton} hitSlop={15}>
               <Ionicons name="arrow-back" size={24} color="#1A3B2F" />
             </Pressable>
-            <Text style={styles.title}>My Pets</Text>
+            <View>
+              <Text style={styles.title}>My Pets</Text>
+              <Text style={styles.subtitle}>Your furry family members</Text>
+            </View>
           </View>
           <Pressable style={styles.addButton} onPress={() => { resetForm(); setModalVisible(true); }}>
             <Ionicons name="add" size={24} color="#1A3B2F" />
@@ -294,10 +297,27 @@ export default function PetProfileScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F0FAF5' },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 24, paddingTop: 10 },
-  headerTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  backButton: { width: 44, height: 44, borderRadius: 12, backgroundColor: '#ffffff', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(26,59,47,0.05)' },
-  title: { fontSize: 28, fontWeight: '900', color: '#1A3B2F' },
+  header: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    paddingHorizontal: 24, paddingTop: Platform.OS === 'ios' ? 10 : 30, paddingBottom: 16,
+  },
+  backButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: '#ffffff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(26, 59, 47, 0.05)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+    elevation: 2,
+  },
+  title: { fontSize: 28, fontWeight: '900', color: '#1A3B2F', letterSpacing: -0.5 },
+  subtitle: { fontSize: 14, color: 'rgba(26,59,47,0.5)', fontWeight: '500', marginTop: 2 },
   addButton: { width: 44, height: 44, borderRadius: 12, backgroundColor: '#FFD166', alignItems: 'center', justifyContent: 'center' },
   petList: { padding: 24, gap: 16 },
   petCard: { backgroundColor: '#ffffff', borderRadius: 20, padding: 12, flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: 'rgba(26,59,47,0.05)' },

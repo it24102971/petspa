@@ -9,6 +9,7 @@ import {
   SafeAreaView,
   Platform,
   Image,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -187,15 +188,34 @@ const Sidebar = ({ isVisible, onClose }: SidebarProps) => {
             <SidebarItem
               icon="log-out-outline"
               label="Logout"
-              onPress={async () => {
-                onClose();
-                try {
-                  await AsyncStorage.multiRemove(['auth:user', 'auth:token', 'auth:isSignedIn']);
-                  router.replace('/');
-                } catch (e) {
-                  console.error(e);
-                  router.replace('/');
-                }
+              onPress={() => {
+                Alert.alert(
+                  "Logout",
+                  "Are you sure you want to logout?",
+                  [
+                    { text: "Cancel", style: "cancel" },
+                    { 
+                      text: "Logout", 
+                      style: "destructive",
+                      onPress: async () => {
+                        onClose();
+                        try {
+                          await AsyncStorage.multiRemove([
+                            'auth:user', 
+                            'auth:token', 
+                            'auth:isSignedIn',
+                            'onboarding:seen'
+                          ]);
+                          router.dismissAll();
+                          router.replace("/");
+                        } catch (e) {
+                          console.error(e);
+                          router.replace("/");
+                        }
+                      }
+                    }
+                  ]
+                );
               }}
             />
           </View>

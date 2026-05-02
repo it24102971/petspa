@@ -10,6 +10,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { API_BASE_URL } from '@/constants/api';
+import { useSidebar } from '@/context/SidebarContext';
 import * as ImagePicker from 'expo-image-picker';
 
 const AUTH_USER_KEY = "auth:user";
@@ -377,6 +378,7 @@ export default function DiaryScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [editEntry, setEditEntry] = useState<DiaryEntry | null>(null);
   const [saving, setSaving] = useState(false);
+  const { openSidebar } = useSidebar();
   const router = useRouter();
 
   const getLatestToken = async () => {
@@ -561,9 +563,14 @@ export default function DiaryScreen() {
       <SafeAreaView style={{ flex: 1 }}>
         {/* Header */}
         <View style={s.screenHeader}>
-          <View>
-            <Text style={s.screenTitle}>Spa Diary</Text>
-            <Text style={s.screenSub}>Pet visit memories & reviews</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            <Pressable onPress={openSidebar} style={s.menuButton} hitSlop={15}>
+              <Ionicons name="menu-outline" size={28} color="#1A3B2F" />
+            </Pressable>
+            <View>
+              <Text style={s.screenTitle}>Spa Diary</Text>
+              <Text style={s.screenSub}>Memories & reviews</Text>
+            </View>
           </View>
           <Pressable style={s.fab} onPress={() => { setEditEntry(null); setModalVisible(true); }}>
             <Ionicons name="add" size={22} color="#1A3B2F" />
@@ -645,7 +652,22 @@ const s = StyleSheet.create({
   // Header
   screenHeader: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    paddingHorizontal: 24, paddingTop: Platform.OS === 'ios' ? 10 : 30, paddingBottom: 8,
+    paddingHorizontal: 24, paddingTop: Platform.OS === 'ios' ? 10 : 30, paddingBottom: 16,
+  },
+  menuButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: '#ffffff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(26, 59, 47, 0.05)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+    elevation: 2,
   },
   screenTitle: { fontSize: 28, fontWeight: '900', color: '#1A3B2F', letterSpacing: -0.5 },
   screenSub: { fontSize: 14, color: 'rgba(26,59,47,0.5)', fontWeight: '500', marginTop: 2 },

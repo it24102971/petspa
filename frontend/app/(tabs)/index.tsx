@@ -34,10 +34,6 @@ const CustomerDashboardContent = ({ user, onLogout, onExplore, onOpenSidebar, on
           </View>
         </View>
       </View>
-      <Pressable style={styles.logoutButton} onPress={onLogout} hitSlop={10}>
-        <Ionicons name="log-out-outline" size={18} color="#1A3B2F" />
-        <Text style={styles.logoutButtonText}>Logout</Text>
-      </Pressable>
     </View>
 
     <View style={styles.roleBadge}>
@@ -83,10 +79,6 @@ const GroomerDashboardContent = ({ user, onLogout, onOpenSidebar }: any) => (
         </Pressable>
         <Text style={styles.dashboardTitle}>Dashboard</Text>
       </View>
-      <Pressable style={styles.logoutButton} onPress={onLogout} hitSlop={10}>
-        <Ionicons name="log-out-outline" size={18} color="#1A3B2F" />
-        <Text style={styles.logoutButtonText}>Logout</Text>
-      </Pressable>
     </View>
 
 
@@ -185,10 +177,6 @@ const AdminDashboardContent = ({ user, onLogout, onOpenSidebar, onAddGroomer, on
         </Pressable>
         <Text style={styles.dashboardTitle}>Admin Panel</Text>
       </View>
-      <Pressable style={styles.logoutButton} onPress={onLogout} hitSlop={10}>
-        <Ionicons name="log-out-outline" size={18} color="#1A3B2F" />
-        <Text style={styles.logoutButtonText}>Logout</Text>
-      </Pressable>
     </View>
 
     {/* Welcome Card */}
