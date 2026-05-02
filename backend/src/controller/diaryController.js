@@ -1,45 +1,4 @@
-import { Readable } from "node:stream";
 import DiaryEntry from "../models/DiaryEntry.js";
-import cloudinary from "../config/cloudinary.js";
-
-const uploadImageToCloudinary = (file) =>
-  new Promise((resolve, reject) => {
-    const uploadStream = cloudinary.uploader.upload_stream(
-      {
-        folder: "wmt-base/diary",
-        resource_type: "image",
-      },
-      (error, result) => {
-        if (error) {
-          reject(error);
-          return;
-        }
-
-        resolve(result);
-      }
-    );
-
-    Readable.from(file.buffer).pipe(uploadStream);
-  });
-
-const uploadBase64ImageToCloudinary = (base64, mimeType = "image/jpeg") =>
-  new Promise((resolve, reject) => {
-    cloudinary.uploader.upload(
-      `data:${mimeType};base64,${base64}`,
-      {
-        folder: "wmt-base/diary",
-        resource_type: "image",
-      },
-      (error, result) => {
-        if (error) {
-          reject(error);
-          return;
-        }
-
-        resolve(result);
-      }
-    );
-  });
 
 const parseBoolean = (value, fallback = false) => {
   if (value === undefined || value === null || value === "") {
@@ -55,10 +14,7 @@ const parseBoolean = (value, fallback = false) => {
 // CREATE – Post a new diary entry
 export const createDiaryEntry = async (req, res) => {
   try {
-    console.log('CreateDiaryEntry request headers:', req.headers && Object.keys(req.headers).length ? { contentType: req.headers['content-type'] } : {});
-    console.log('CreateDiaryEntry body keys:', Object.keys(req.body || {}));
-    console.log('CreateDiaryEntry file:', !!req.file);
-    const { petName, petType, title, content, rating, serviceDate, photoUrl, photoBase64, photoMimeType } = req.body;
+    const { petName, petType, title, content, rating, serviceDate, photoUrl } = req.body;
     const isPublic = parseBoolean(req.body.isPublic, true);
     let uploadedPhotoUrl = photoUrl || null;
 
@@ -67,11 +23,7 @@ export const createDiaryEntry = async (req, res) => {
     }
 
     if (req.file) {
-      const uploadResult = await uploadImageToCloudinary(req.file);
-      uploadedPhotoUrl = uploadResult.secure_url;
-    } else if (photoBase64) {
-      const uploadResult = await uploadBase64ImageToCloudinary(photoBase64, photoMimeType || "image/jpeg");
-      uploadedPhotoUrl = uploadResult.secure_url;
+      uploadedPhotoUrl = `/uploads/pets/${req.file.filename}`;
     }
 
     const entry = await DiaryEntry.create({
@@ -88,8 +40,8 @@ export const createDiaryEntry = async (req, res) => {
 
     res.status(201).json(entry);
   } catch (error) {
-    console.error("Create diary entry error:", error && error.stack ? error.stack : error);
-    res.status(500).json({ message: "Server error creating diary entry", error: error?.message || String(error) });
+    console.error("Create diary entry error:", error);
+    res.status(500).json({ message: "Server error creating diary entry", error: error.message });
   }
 };
 
@@ -150,16 +102,12 @@ export const updateDiaryEntry = async (req, res) => {
       return res.status(403).json({ message: "Not authorized to edit this entry" });
     }
 
-    const { petName, petType, title, content, rating, serviceDate, photoUrl, photoBase64, photoMimeType } = req.body;
+    const { petName, petType, title, content, rating, serviceDate, photoUrl } = req.body;
     const isPublic = req.body.isPublic !== undefined ? parseBoolean(req.body.isPublic, entry.isPublic) : undefined;
     let uploadedPhotoUrl = photoUrl;
 
     if (req.file) {
-      const uploadResult = await uploadImageToCloudinary(req.file);
-      uploadedPhotoUrl = uploadResult.secure_url;
-    } else if (photoBase64) {
-      const uploadResult = await uploadBase64ImageToCloudinary(photoBase64, photoMimeType || "image/jpeg");
-      uploadedPhotoUrl = uploadResult.secure_url;
+      uploadedPhotoUrl = `/uploads/pets/${req.file.filename}`;
     }
 
     if (petName !== undefined) entry.petName = petName;
@@ -174,8 +122,8 @@ export const updateDiaryEntry = async (req, res) => {
     const updated = await entry.save();
     res.json(updated);
   } catch (error) {
-    console.error("Update diary entry error:", error && error.stack ? error.stack : error);
-    res.status(500).json({ message: "Server error updating diary entry", error: error?.message || String(error) });
+    console.error("Update diary entry error:", error);
+    res.status(500).json({ message: "Server error updating diary entry", error: error.message });
   }
 };
 

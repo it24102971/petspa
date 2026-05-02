@@ -3,6 +3,7 @@ import cors from "cors";
 import authRoutes from "./routes/authRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import petRoutes from "./routes/petRoutes.js";
+import diaryRoutes from "./routes/diaryRoutes.js";
 
 const app = express();
 
@@ -19,5 +20,6 @@ app.get("/api/health", (_req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/pets", petRoutes);
+app.use("/api/diary", diaryRoutes);
 
 export default app;
