@@ -1,4 +1,13 @@
 import express from "express";
+import {
+  getAllUsers,
+  toggleUserStatus,
+  getGroomers,
+  addGroomer,
+  getAllPets,
+  updatePetAdmin,
+  deletePetAdmin,
+} from "../controller/adminController.js";
 
 import { protect, adminOnly } from "../middleware/authMiddleware.js";
 import upload from "../middleware/uploadMiddleware.js";

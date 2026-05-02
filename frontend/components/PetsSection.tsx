@@ -31,7 +31,7 @@ export default function PetsSection() {
   const [age, setAge] = useState('');
   const [cuteness, setCuteness] = useState('10');
   
-  const [errors, setErrors] = useState<{name?: string, breed?: string, age?: string, cuteness?: string}>({});
+  const [errors, setErrors] = useState<{name?: string, type?: string, breed?: string, age?: string, cuteness?: string}>({});
 
   const petTypes = ['Dog', 'Cat', 'Bird', 'Rabbit', 'Hamster', 'Fish', 'Turtle', 'Guinea Pig', 'Other'];
 

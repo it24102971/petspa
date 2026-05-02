@@ -2,6 +2,15 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 
+export const getMe = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select("-password");
+    res.status(200).json(user);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching user", error: error.message });
+  }
+};
+
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const phonePattern = /^[0-9]{10}$/;
 const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -136,26 +145,28 @@ export const loginUser = async (req, res) => {
 
 export const updateUserProfile = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { fullName, phoneNumber, experience, specialization, aboutMe, profilePicture } = req.body;
+    const userId = req.user._id;
+    const { fullName, phoneNumber, experience, specialization, aboutMe } = req.body;
+    
+    let updateData = {
+      fullName: fullName?.trim(),
+      phoneNumber: phoneNumber?.trim(),
+      experience,
+      specialization,
+      aboutMe,
+    };
 
-    const normalizedName = typeof fullName === "string" ? fullName.trim() : "";
-    const normalizedPhone = typeof phoneNumber === "string" ? phoneNumber.trim() : "";
+    if (req.file) {
+      updateData.profilePicture = `/uploads/pets/${req.file.filename}`; // Reusing pets folder for simplicity
+    }
 
-    if (!normalizedName || !normalizedPhone) {
+    if (!updateData.fullName || !updateData.phoneNumber) {
       return res.status(400).json({ message: "Full name and phone number are required." });
     }
 
     const updatedUser = await User.findByIdAndUpdate(
-      id,
-      {
-        fullName: normalizedName,
-        phoneNumber: normalizedPhone,
-        experience,
-        specialization,
-        aboutMe,
-        profilePicture,
-      },
+      userId,
+      updateData,
       { new: true, runValidators: true }
     );
 

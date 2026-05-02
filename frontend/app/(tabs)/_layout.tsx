@@ -97,6 +97,7 @@ function TabLayoutContent() {
           options={{
             title: 'Appointments',
             tabBarIcon: ({ color }) => <Ionicons size={26} name="calendar" color={color} />,
+            href: userRole === 'groomer' ? null : '/appointments',
           }}
         />
         
