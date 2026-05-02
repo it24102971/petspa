@@ -1,7 +1,15 @@
 import express from "express";
-
 import { protect, adminOnly } from "../middleware/authMiddleware.js";
 import upload from "../middleware/uploadMiddleware.js";
+import {
+  getAllUsers,
+  toggleUserStatus,
+  getGroomers,
+  addGroomer,
+  getAllPets,
+  updatePetAdmin,
+  deletePetAdmin,
+} from "../controller/adminController.js";
 
 const router = express.Router();
 
