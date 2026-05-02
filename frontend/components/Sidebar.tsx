@@ -194,6 +194,21 @@ const Sidebar = ({ isVisible, onClose }: SidebarProps) => {
                   label="Groomer Management"
                   onPress={() => handleNavigate('/admin/groomers')}
                 />
+                <SidebarItem
+                  icon="calendar-outline"
+                  label="Appointment Management"
+                  onPress={() => handleNavigate('/admin/appointments')}
+                />
+                <SidebarItem
+                  icon="sparkles-outline"
+                  label="Service Management"
+                  onPress={() => handleNavigate('/(tabs)/spa')}
+                />
+                <SidebarItem
+                  icon="cafe-outline"
+                  label="Cafe Management"
+                  onPress={() => handleNavigate('/admin/cafe')}
+                />
               </>
             )}
             <View style={styles.divider} />

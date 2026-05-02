@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, Pressable, RefreshControl, Platform, Image, ActivityIndicator, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useRouter } from 'expo-router';
+import { router, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { useSidebar } from '@/context/SidebarContext';
@@ -209,7 +209,7 @@ const AdminDashboardContent = ({ user, onLogout, onOpenSidebar, onAddGroomer, on
     {/* Stats Grid */}
     <View style={styles.statsGrid}>
       <View style={styles.statsRow}>
-        <Pressable 
+        <Pressable
           style={[styles.statBox, { backgroundColor: '#ffffff' }]}
           onPress={() => router.push('/admin/users')}
         >
@@ -219,7 +219,7 @@ const AdminDashboardContent = ({ user, onLogout, onOpenSidebar, onAddGroomer, on
           </View>
           <Text style={styles.statBoxLabel}>Total Users</Text>
         </Pressable>
-        <Pressable 
+        <Pressable
           style={[styles.statBox, { backgroundColor: '#ffffff' }]}
           onPress={() => router.push('/admin/appointments')}
         >
@@ -231,7 +231,7 @@ const AdminDashboardContent = ({ user, onLogout, onOpenSidebar, onAddGroomer, on
         </Pressable>
       </View>
       <View style={styles.statsRow}>
-        <Pressable 
+        <Pressable
           style={[styles.statBox, { backgroundColor: '#ffffff' }]}
           onPress={() => router.push('/admin/groomers')}
         >
@@ -258,11 +258,17 @@ const AdminDashboardContent = ({ user, onLogout, onOpenSidebar, onAddGroomer, on
       <Text style={styles.sectionTitleText}>Management</Text>
     </View>
     <View style={styles.managementGrid}>
-      <Pressable style={styles.managementCard} onPress={() => router.push('/admin/pets')}>
-        <View style={[styles.managementIconContainer, { backgroundColor: '#FFD166' }]}>
-          <Ionicons name="paw" size={24} color="#1A3B2F" />
+      <Pressable style={styles.managementCard} onPress={() => router.push('/(tabs)/spa')}>
+        <View style={[styles.managementIconContainer, { backgroundColor: '#EAF5EF' }]}>
+          <Ionicons name="sparkles" size={24} color="#1A3B2F" />
         </View>
-        <Text style={styles.managementLabel}>Pet Database</Text>
+        <Text style={styles.managementLabel}>Services</Text>
+      </Pressable>
+      <Pressable style={styles.managementCard} onPress={() => router.push('/admin/cafe')}>
+        <View style={[styles.managementIconContainer, { backgroundColor: '#FDF2F2' }]}>
+          <Ionicons name="cafe" size={24} color="#EF5350" />
+        </View>
+        <Text style={styles.managementLabel}>Cafe</Text>
       </Pressable>
       <Pressable style={styles.managementCard} onPress={onAddGroomer}>
         <View style={[styles.managementIconContainer, { backgroundColor: '#1A3B2F' }]}>
@@ -337,8 +343,8 @@ export default function DashboardScreen() {
       "Are you sure you want to logout?",
       [
         { text: "Cancel", style: "cancel" },
-        { 
-          text: "Logout", 
+        {
+          text: "Logout",
           style: "destructive",
           onPress: async () => {
             try {
@@ -375,24 +381,24 @@ export default function DashboardScreen() {
       <StatusBar style="dark" />
       <SafeAreaView style={{ flex: 1 }}>
         {user?.role === 'admin' ? (
-          <AdminDashboardContent 
-            user={user} 
-            onLogout={handleLogout} 
+          <AdminDashboardContent
+            user={user}
+            onLogout={handleLogout}
             onOpenSidebar={openSidebar}
             onAddGroomer={() => router.push('/admin/add-groomer')}
             onManageGroomers={() => router.push('/admin/groomers')}
           />
         ) : user?.role === 'groomer' ? (
-          <GroomerDashboardContent 
-            user={user} 
-            onLogout={handleLogout} 
+          <GroomerDashboardContent
+            user={user}
+            onLogout={handleLogout}
             onOpenSidebar={openSidebar}
           />
         ) : (
-          <CustomerDashboardContent 
-            user={user} 
-            onLogout={handleLogout} 
-            onExplore={() => router.push('/(tabs)/explore')} 
+          <CustomerDashboardContent
+            user={user}
+            onLogout={handleLogout}
+            onExplore={() => router.push('/(tabs)/explore')}
             onOpenSidebar={openSidebar}
             onPets={() => router.push('/pets')}
           />
@@ -405,7 +411,7 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F0FAF5', 
+    backgroundColor: '#F0FAF5',
   },
   loadingContainer: {
     justifyContent: 'center',
