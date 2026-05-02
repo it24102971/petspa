@@ -1,9 +1,9 @@
 import bcrypt from "bcryptjs";
-
 import User from "../models/User.js";
 import Pet from "../models/Pet.js";
 
-
+// User Management
+export const getAllUsers = async (req, res) => {
   try {
     const users = await User.find({}).select("-password");
     const formattedUsers = users.map((u) => ({
@@ -45,7 +45,7 @@ export const toggleUserStatus = async (req, res) => {
   }
 };
 
-
+export const getGroomers = async (req, res) => {
   try {
     const groomers = await User.find({ role: "groomer" }).select("-password");
     res.status(200).json(groomers);
@@ -64,7 +64,62 @@ export const addGroomer = async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+    const newGroomer = await User.create({
+      fullName,
+      email,
+      phoneNumber,
+      password: hashedPassword,
+      role: "groomer",
+    });
 
+    res.status(201).json({
+      message: "Groomer added successfully.",
+      user: {
+        id: newGroomer._id,
+        fullName: newGroomer.fullName,
+        email: newGroomer.email,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to add groomer.", error: error.message });
+  }
+};
+
+// Pet Management
+export const getAllPets = async (req, res) => {
+  try {
+    const pets = await Pet.find().populate("owner", "fullName email");
+    res.status(200).json(pets);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch pets.", error: error.message });
+  }
+};
+
+export const updatePetAdmin = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updateData = { ...req.body };
+    if (req.file) {
+      updateData.imageUrl = `/uploads/pets/${req.file.filename}`;
+    }
+
+    const updatedPet = await Pet.findByIdAndUpdate(id, updateData, { new: true });
+    if (!updatedPet) {
+      return res.status(404).json({ message: "Pet not found." });
+    }
+    res.status(200).json(updatedPet);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to update pet.", error: error.message });
+  }
+};
+
+export const deletePetAdmin = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deletedPet = await Pet.findByIdAndDelete(id);
+    if (!deletedPet) {
+      return res.status(404).json({ message: "Pet not found." });
+    }
     res.status(200).json({ message: "Pet deleted successfully." });
   } catch (error) {
     res.status(500).json({ message: "Failed to delete pet.", error: error.message });
