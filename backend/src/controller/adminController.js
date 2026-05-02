@@ -1,8 +1,9 @@
 import bcrypt from "bcryptjs";
-import Pet from "../models/Pet.js";
-import User from "../models/User.js";
 
-export const getAllUsers = async (_req, res) => {
+import User from "../models/User.js";
+import Pet from "../models/Pet.js";
+
+
   try {
     const users = await User.find({}).select("-password");
     const formattedUsers = users.map((u) => ({
@@ -44,7 +45,7 @@ export const toggleUserStatus = async (req, res) => {
   }
 };
 
-export const getGroomers = async (_req, res) => {
+
   try {
     const groomers = await User.find({ role: "groomer" }).select("-password");
     res.status(200).json(groomers);
@@ -63,63 +64,6 @@ export const addGroomer = async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    const groomer = new User({
-      fullName,
-      email,
-      phoneNumber,
-      password: hashedPassword,
-      role: "groomer",
-    });
-
-    await groomer.save();
-    res.status(201).json({ message: "Groomer added successfully.", groomer });
-  } catch (error) {
-    res.status(500).json({ message: "Failed to add groomer.", error: error.message });
-  }
-};
-
-export const getAllPets = async (_req, res) => {
-  try {
-    const pets = await Pet.find({}).populate("owner", "fullName email");
-    res.status(200).json(pets);
-  } catch (error) {
-    res.status(500).json({ message: "Failed to fetch all pets.", error: error.message });
-  }
-};
-
-export const updatePetAdmin = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const updateData = { ...req.body };
-
-    if (req.file) {
-      updateData.imageUrl = `/uploads/pets/${req.file.filename}`;
-    }
-
-    const updatedPet = await Pet.findByIdAndUpdate(id, updateData, {
-      new: true,
-      runValidators: true,
-    });
-
-    if (!updatedPet) {
-      return res.status(404).json({ message: "Pet not found." });
-    }
-
-    res.status(200).json(updatedPet);
-  } catch (error) {
-    res.status(500).json({ message: "Failed to update pet.", error: error.message });
-  }
-};
-
-export const deletePetAdmin = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const deletedPet = await Pet.findByIdAndDelete(id);
-
-    if (!deletedPet) {
-      return res.status(404).json({ message: "Pet not found." });
-    }
 
     res.status(200).json({ message: "Pet deleted successfully." });
   } catch (error) {

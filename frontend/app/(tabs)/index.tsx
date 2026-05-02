@@ -13,7 +13,7 @@ const ONBOARDING_SEEN_KEY = "onboarding:seen";
 
 // --- Components ---
 
-const CustomerDashboardContent = ({ user, onLogout, onExplore, onOpenSidebar }: any) => (
+const CustomerDashboardContent = ({ user, onLogout, onExplore, onOpenSidebar, onPets }: any) => (
   <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
     <View style={styles.header}>
       <View style={styles.headerLeft}>
@@ -34,10 +34,6 @@ const CustomerDashboardContent = ({ user, onLogout, onExplore, onOpenSidebar }: 
           </View>
         </View>
       </View>
-      <Pressable style={styles.logoutButton} onPress={onLogout} hitSlop={10}>
-        <Ionicons name="log-out-outline" size={18} color="#1A3B2F" />
-        <Text style={styles.logoutButtonText}>Logout</Text>
-      </Pressable>
     </View>
 
     <View style={styles.roleBadge}>
@@ -49,10 +45,10 @@ const CustomerDashboardContent = ({ user, onLogout, onExplore, onOpenSidebar }: 
         <Text style={styles.statNumber}>12</Text>
         <Text style={styles.statLabel}>Bookings</Text>
       </View>
-      <View style={styles.statCard}>
+      <Pressable style={styles.statCard} onPress={onPets}>
         <Text style={styles.statNumber}>05</Text>
         <Text style={styles.statLabel}>Pets</Text>
-      </View>
+      </Pressable>
       <View style={styles.statCard}>
         <Text style={styles.statNumber}>08</Text>
         <Text style={styles.statLabel}>Reviews</Text>
@@ -83,10 +79,6 @@ const GroomerDashboardContent = ({ user, onLogout, onOpenSidebar }: any) => (
         </Pressable>
         <Text style={styles.dashboardTitle}>Dashboard</Text>
       </View>
-      <Pressable style={styles.logoutButton} onPress={onLogout} hitSlop={10}>
-        <Ionicons name="log-out-outline" size={18} color="#1A3B2F" />
-        <Text style={styles.logoutButtonText}>Logout</Text>
-      </Pressable>
     </View>
 
 
@@ -185,10 +177,6 @@ const AdminDashboardContent = ({ user, onLogout, onOpenSidebar, onAddGroomer, on
         </Pressable>
         <Text style={styles.dashboardTitle}>Admin Panel</Text>
       </View>
-      <Pressable style={styles.logoutButton} onPress={onLogout} hitSlop={10}>
-        <Ionicons name="log-out-outline" size={18} color="#1A3B2F" />
-        <Text style={styles.logoutButtonText}>Logout</Text>
-      </Pressable>
     </View>
 
     {/* Welcome Card */}
@@ -388,6 +376,7 @@ export default function DashboardScreen() {
             onLogout={handleLogout} 
             onExplore={() => router.push('/(tabs)/explore')} 
             onOpenSidebar={openSidebar}
+            onPets={() => router.push('/pets')}
           />
         )}
       </SafeAreaView>
@@ -476,11 +465,16 @@ const styles = StyleSheet.create({
   logoutButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
     backgroundColor: '#FFD166',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 999,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 25,
+    shadowColor: '#FFD166',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 3,
   },
   logoutButtonText: {
     color: '#1A3B2F',
@@ -510,16 +504,18 @@ const styles = StyleSheet.create({
   statCard: {
     flex: 1,
     backgroundColor: '#ffffff',
-    padding: 18,
-    borderRadius: 22,
+    padding: 20,
+    borderRadius: 24,
     alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(26, 59, 47, 0.1)',
+    borderColor: 'rgba(26, 59, 47, 0.08)',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
+    shadowOpacity: 0.04,
+    shadowRadius: 12,
     elevation: 2,
+    minHeight: 100,
   },
   statNumber: {
     fontSize: 22,
@@ -577,11 +573,16 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     backgroundColor: '#FFD166',
-    height: 56,
-    borderRadius: 28,
+    height: 60,
+    borderRadius: 30,
     width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: '#FFD166',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 4,
   },
   actionButtonText: {
     color: '#1A3B2F',
@@ -742,9 +743,11 @@ const styles = StyleSheet.create({
   statBox: {
     flex: 1,
     borderRadius: 20,
-    padding: 16,
+    padding: 18,
     borderWidth: 1,
     borderColor: 'rgba(26, 59, 47, 0.05)',
+    minHeight: 100,
+    justifyContent: 'center',
   },
   statBoxHeader: {
     flexDirection: 'row',

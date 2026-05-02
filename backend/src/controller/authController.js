@@ -136,26 +136,31 @@ export const loginUser = async (req, res) => {
 
 export const updateUserProfile = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { fullName, phoneNumber, experience, specialization, aboutMe, profilePicture } = req.body;
+    const userId = req.user._id;
+    const { fullName, phone, address, experience, specialization, aboutMe } = req.body;
 
     const normalizedName = typeof fullName === "string" ? fullName.trim() : "";
-    const normalizedPhone = typeof phoneNumber === "string" ? phoneNumber.trim() : "";
 
-    if (!normalizedName || !normalizedPhone) {
-      return res.status(400).json({ message: "Full name and phone number are required." });
+    if (!normalizedName) {
+      return res.status(400).json({ message: "Full name is required." });
+    }
+
+    const updateData = {
+      fullName: normalizedName,
+      phoneNumber: phone,
+      address,
+      experience,
+      specialization,
+      aboutMe,
+    };
+
+    if (req.file) {
+      updateData.profilePicture = `/uploads/pets/${req.file.filename}`;
     }
 
     const updatedUser = await User.findByIdAndUpdate(
-      id,
-      {
-        fullName: normalizedName,
-        phoneNumber: normalizedPhone,
-        experience,
-        specialization,
-        aboutMe,
-        profilePicture,
-      },
+      userId,
+      updateData,
       { new: true, runValidators: true }
     );
 
@@ -164,18 +169,16 @@ export const updateUserProfile = async (req, res) => {
     }
 
     return res.status(200).json({
-      message: "Profile updated successfully.",
-      user: {
-        id: updatedUser._id,
-        fullName: updatedUser.fullName,
-        email: updatedUser.email,
-        phoneNumber: updatedUser.phoneNumber,
-        role: updatedUser.role,
-        profilePicture: updatedUser.profilePicture,
-        experience: updatedUser.experience,
-        specialization: updatedUser.specialization,
-        aboutMe: updatedUser.aboutMe,
-      },
+      id: updatedUser._id,
+      fullName: updatedUser.fullName,
+      email: updatedUser.email,
+      phone: updatedUser.phoneNumber,
+      address: updatedUser.address,
+      role: updatedUser.role,
+      profilePicture: updatedUser.profilePicture,
+      experience: updatedUser.experience,
+      specialization: updatedUser.specialization,
+      aboutMe: updatedUser.aboutMe,
     });
   } catch (error) {
     return res.status(500).json({ message: "Failed to update profile.", error: error.message });
