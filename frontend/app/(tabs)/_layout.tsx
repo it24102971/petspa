@@ -99,6 +99,15 @@ function TabLayoutContent() {
             tabBarIcon: ({ color }) => <Ionicons size={26} name="calendar" color={color} />,
           }}
         />
+
+        <Tabs.Screen
+          name="spa"
+          options={{
+            title: 'Spa',
+            tabBarIcon: ({ color }) => <Ionicons size={26} name="sparkles" color={color} />,
+            href: userRole === 'groomer' ? null : '/spa',
+          }}
+        />
         
         <Tabs.Screen
           name="history"
