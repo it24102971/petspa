@@ -8,6 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 import { API_BASE_URL } from '@/constants/api';
 import { StatusBar } from 'expo-status-bar';
+import { useRouter } from 'expo-router';
 
 const AUTH_TOKEN_KEY = "auth:token";
 
@@ -23,6 +24,7 @@ export default function PetProfileScreen() {
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const [saving, setSaving] = useState(false);
+  const router = useRouter();
   
   // Form State
   const [editingPet, setEditingPet] = useState<any>(null);
@@ -206,11 +208,11 @@ export default function PetProfileScreen() {
                     </View>
                   </View>
                   <View style={styles.petActions}>
-                    <Pressable style={styles.actionIcon} onPress={() => openEdit(pet)}>
-                      <Ionicons name="create-outline" size={20} color="#1A3B2F" />
+                    <Pressable style={styles.actionIcon} onPress={() => openEdit(pet)} hitSlop={10}>
+                      <Ionicons name="create-outline" size={22} color="#1A3B2F" />
                     </Pressable>
-                    <Pressable style={[styles.actionIcon, { backgroundColor: '#FFEBEE' }]} onPress={() => handleDelete(pet._id)}>
-                      <Ionicons name="trash-outline" size={20} color="#D32F2F" />
+                    <Pressable style={[styles.actionIcon, { backgroundColor: '#FFEBEE' }]} onPress={() => handleDelete(pet._id)} hitSlop={10}>
+                      <Ionicons name="trash-outline" size={22} color="#D32F2F" />
                     </Pressable>
                   </View>
                 </View>
@@ -306,7 +308,7 @@ const styles = StyleSheet.create({
   genderBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(26,59,47,0.05)', alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, marginTop: 6 },
   genderText: { fontSize: 11, fontWeight: '700', color: '#1A3B2F', textTransform: 'capitalize' },
   petActions: { gap: 8 },
-  actionIcon: { width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(26,59,47,0.05)', alignItems: 'center', justifyContent: 'center' },
+  actionIcon: { width: 44, height: 44, borderRadius: 12, backgroundColor: 'rgba(26,59,47,0.05)', alignItems: 'center', justifyContent: 'center' },
   
   // Modal
   modalContainer: { flex: 1, backgroundColor: '#F0FAF5' },
@@ -319,7 +321,11 @@ const styles = StyleSheet.create({
   imagePlaceholderText: { fontSize: 12, fontWeight: '700', color: 'rgba(26,59,47,0.4)' },
   pickedImage: { width: '100%', height: '100%' },
   label: { fontSize: 14, fontWeight: '800', color: '#1A3B2F', marginBottom: 8, marginTop: 16 },
-  input: { backgroundColor: '#ffffff', borderRadius: 12, padding: 14, fontSize: 16, color: '#1A3B2F', borderWidth: 1, borderColor: 'rgba(26,59,47,0.1)' },
+  input: {
+    backgroundColor: '#ffffff', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 16,
+    fontSize: 16, color: '#1A3B2F', borderWidth: 1, borderColor: 'rgba(26,59,47,0.1)',
+    minHeight: 56,
+  },
   inputRow: { flexDirection: 'row' },
   typeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   typeChip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 10, backgroundColor: '#ffffff', borderWidth: 1, borderColor: 'rgba(26,59,47,0.1)' },

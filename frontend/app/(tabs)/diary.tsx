@@ -718,10 +718,11 @@ const s = StyleSheet.create({
 
   // Form
   label: { fontSize: 13, fontWeight: '800', color: '#1A3B2F', marginBottom: 8, marginTop: 4 },
-  input: {
-    backgroundColor: '#ffffff', borderRadius: 14, paddingHorizontal: 16, paddingVertical: 14,
-    fontSize: 15, color: '#1A3B2F', borderWidth: 1, borderColor: 'rgba(26,59,47,0.1)',
+   input: {
+    backgroundColor: '#ffffff', borderRadius: 14, paddingHorizontal: 16, paddingVertical: 16,
+    fontSize: 16, color: '#1A3B2F', borderWidth: 1, borderColor: 'rgba(26,59,47,0.1)',
     marginBottom: 16,
+    minHeight: 56,
   },
   imagePickerBtn: {
     flexDirection: 'row',
@@ -730,10 +731,11 @@ const s = StyleSheet.create({
     backgroundColor: '#ffffff',
     borderRadius: 14,
     paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingVertical: 16,
     borderWidth: 1,
     borderColor: 'rgba(26,59,47,0.1)',
     marginBottom: 12,
+    minHeight: 56,
   },
   imagePickerText: {
     fontSize: 15,
@@ -751,8 +753,9 @@ const s = StyleSheet.create({
   },
   dateInputRow: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
-    backgroundColor: '#ffffff', borderRadius: 14, paddingHorizontal: 16, paddingVertical: 14,
+    backgroundColor: '#ffffff', borderRadius: 14, paddingHorizontal: 16, paddingVertical: 16,
     borderWidth: 1, borderColor: 'rgba(26,59,47,0.1)', marginBottom: 16,
+    minHeight: 56,
   },
   dateValue: {
     flex: 1,
