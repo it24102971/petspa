@@ -24,6 +24,29 @@ const userSchema = new mongoose.Schema(
       required: true,
       minlength: 6,
     },
+    experience: {
+      type: String,
+      trim: true,
+    },
+    specialization: {
+      type: String,
+      trim: true,
+    },
+    availableDays: {
+      type: String,
+      trim: true,
+    },
+    availableTime: {
+      type: String,
+      trim: true,
+    },
+    aboutMe: {
+      type: String,
+      trim: true,
+    },
+    profilePicture: {
+      type: String, // Store as base64 or URL
+    },
     role: {
       type: String,
       enum: ["customer", "admin", "groomer"],
@@ -42,3 +65,4 @@ const userSchema = new mongoose.Schema(
 const User = mongoose.model("User", userSchema);
 
 export default User;
+// update

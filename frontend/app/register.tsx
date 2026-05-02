@@ -15,6 +15,7 @@ import {
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { Ionicons } from "@expo/vector-icons";
+import { SIZES } from "@/constants/spacing";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { API_BASE_URL } from "@/constants/api";
@@ -335,7 +336,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "rgba(26, 59, 47, 0.1)",
     borderRadius: 16,
-    padding: 16,
+    paddingHorizontal: 16,
+    height: 56,
     color: "#1A3B2F",
     fontSize: 16,
     shadowColor: "#000",
@@ -351,6 +353,7 @@ const styles = StyleSheet.create({
     borderColor: "rgba(26, 59, 47, 0.1)",
     borderRadius: 16,
     alignItems: "center",
+    height: 56,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
@@ -359,7 +362,8 @@ const styles = StyleSheet.create({
   },
   passwordInput: {
     flex: 1,
-    padding: 16,
+    paddingHorizontal: 16,
+    height: 56,
     color: "#1A3B2F",
     fontSize: 16,
   },
@@ -367,16 +371,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   button: {
-    backgroundColor: "#FFD166", // Travel-friendly yellow
-    height: 60,
-    borderRadius: 30,
+    backgroundColor: "#FFD166",
+    height: SIZES.buttonHeight,
+    borderRadius: SIZES.buttonRadius,
     alignItems: "center",
     justifyContent: "center",
     elevation: 4,
     marginTop: 10,
   },
   buttonText: {
-    color: "#1d140e",
+    color: "#1A3B2F",
     fontSize: 18,
     fontWeight: "800",
     letterSpacing: 1.2,

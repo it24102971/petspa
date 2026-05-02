@@ -1,5 +1,6 @@
 import User from "../models/User.js";
 
+
 export const getAllUsers = async (req, res) => {
   try {
     const users = await User.find({}).select("-password");
@@ -39,5 +40,9 @@ export const toggleUserStatus = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: "Failed to update user status.", error: error.message });
+  }
+};
+
+
   }
 };

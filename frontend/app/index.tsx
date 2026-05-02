@@ -127,8 +127,8 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: "#FFD166", // Travel-friendly yellow
-    height: 60,
-    borderRadius: 30, // Fully rounded for modern look
+    height: 56,
+    borderRadius: 28, // Fully rounded
     alignItems: "center",
     justifyContent: "center",
     elevation: 4,
