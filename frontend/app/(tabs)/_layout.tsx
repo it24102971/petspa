@@ -113,6 +113,7 @@ function TabLayoutContent() {
           options={{
             title: 'Diary',
             tabBarIcon: ({ color }) => <Ionicons size={26} name="book" color={color} />,
+            href: userRole === 'admin' ? null : '/diary',
           }}
         />
         

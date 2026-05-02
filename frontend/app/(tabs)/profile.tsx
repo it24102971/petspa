@@ -44,7 +44,7 @@ export default function ProfileScreen() {
           setUser(parsed);
           setFullName(parsed.fullName || '');
           setEmail(parsed.email || '');
-          setPhone(parsed.phone || '');
+          setPhone(parsed.phoneNumber || '');
           setAddress(parsed.address || '');
         }
       } catch (error) {
