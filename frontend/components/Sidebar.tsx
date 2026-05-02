@@ -154,6 +154,11 @@ const Sidebar = ({ isVisible, onClose }: SidebarProps) => {
                   onPress={() => handleNavigate('/admin/users')}
                 />
                 <SidebarItem
+                  icon="paw-outline"
+                  label="Pet Management"
+                  onPress={() => handleNavigate('/admin/pets')}
+                />
+                <SidebarItem
                   icon="business-outline"
                   label="Groomer Management"
                   onPress={() => handleNavigate('/admin/groomers')}
