@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, Pressable, FlatList, ActivityIndicator, Image, Alert, Modal, TouchableOpacity } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { API_BASE_URL } from '@/constants/api';
@@ -26,6 +26,7 @@ interface Booking {
 
 export default function GroomerAppointmentsScreen() {
   const router = useRouter();
+  const { type } = useLocalSearchParams<{ type: string }>();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -38,7 +39,14 @@ export default function GroomerAppointmentsScreen() {
       });
       const data = await response.json();
       if (response.ok) {
-        setBookings(data);
+        // Filter based on type
+        if (type === 'jobs') {
+          setBookings(data.filter((b: any) => b.status === 'Confirmed'));
+        } else if (type === 'schedule') {
+          setBookings(data.filter((b: any) => b.status === 'Accepted'));
+        } else {
+          setBookings(data);
+        }
       }
     } catch (error) {
       console.error("Fetch bookings failed:", error);
@@ -50,7 +58,7 @@ export default function GroomerAppointmentsScreen() {
 
   useEffect(() => {
     fetchBookings();
-  }, []);
+  }, [type]);
 
   const handleAccept = async (id: string) => {
     try {
@@ -60,8 +68,8 @@ export default function GroomerAppointmentsScreen() {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (response.ok) {
-        setBookings(bookings.map(b => b._id === id ? { ...b, status: 'Accepted' } : b));
-        Alert.alert("Success", "Appointment accepted! It's now in your today's schedule.");
+        setBookings(bookings.filter(b => b._id !== id));
+        Alert.alert("Success", "Appointment accepted! You can now find it in your My Schedule.");
       }
     } catch (error) {
       Alert.alert("Error", "Could not accept appointment.");
@@ -110,7 +118,7 @@ export default function GroomerAppointmentsScreen() {
           <Pressable onPress={() => router.back()} style={styles.backButton}>
             <Ionicons name="chevron-back" size={24} color="#1A3B2F" />
           </Pressable>
-          <Text style={styles.headerTitle}>Grooming Jobs</Text>
+          <Text style={styles.headerTitle}>{type === 'jobs' ? 'Available Jobs' : 'My Schedule'}</Text>
           <View style={{ width: 40 }} />
         </View>
 
@@ -124,7 +132,14 @@ export default function GroomerAppointmentsScreen() {
             contentContainerStyle={styles.list}
             onRefresh={fetchBookings}
             refreshing={refreshing}
-            ListHeaderComponent={<Text style={styles.listTitle}>Available & Current Jobs</Text>}
+            ListEmptyComponent={
+              <View style={{ alignItems: 'center', marginTop: 100 }}>
+                <Ionicons name="document-text-outline" size={60} color="#ccc" />
+                <Text style={{ marginTop: 20, color: '#999', fontSize: 16 }}>
+                  {type === 'jobs' ? 'No new verified bookings found.' : 'You have no accepted jobs yet.'}
+                </Text>
+              </View>
+            }
           />
         )}
       </SafeAreaView>

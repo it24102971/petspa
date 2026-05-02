@@ -6,6 +6,7 @@ import petRoutes from "./routes/petRoutes.js";
 import diaryRoutes from "./routes/diaryRoutes.js";
 import spaServiceRoutes from "./routes/spaServiceRoutes.js";
 import cafeRoutes from "./routes/cafeRoutes.js";
+import notificationRoutes from "./routes/notificationRoutes.js";
 
 const app = express();
 
@@ -25,5 +26,6 @@ app.use("/api/pets", petRoutes);
 app.use("/api/diary", diaryRoutes);
 app.use("/api/spa-services", spaServiceRoutes);
 app.use("/api/cafe", cafeRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 export default app;

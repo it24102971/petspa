@@ -180,15 +180,36 @@ const Sidebar = ({ isVisible, onClose }: SidebarProps) => {
             <SidebarItem
               icon="log-out-outline"
               label="Logout"
-              onPress={async () => {
-                onClose();
-                try {
-                  await AsyncStorage.multiRemove(['auth:user', 'auth:token', 'auth:isSignedIn']);
-                  router.replace('/');
-                } catch (e) {
-                  console.error(e);
-                  router.replace('/');
-                }
+              onPress={() => {
+                const { Alert } = require('react-native');
+                Alert.alert(
+                  "Logout",
+                  "Are you sure you want to logout?",
+                  [
+                    { text: "Cancel", style: "cancel" },
+                    { 
+                      text: "Logout", 
+                      style: "destructive",
+                      onPress: async () => {
+                        onClose();
+                        try {
+                          await AsyncStorage.multiRemove([
+                            'auth:user', 
+                            'auth:token', 
+                            'auth:isSignedIn',
+                            'onboarding:seen'
+                          ]);
+                          router.dismissAll();
+                          router.replace('/');
+                        } catch (e) {
+                          console.error(e);
+                          router.dismissAll();
+                          router.replace('/');
+                        }
+                      }
+                    }
+                  ]
+                );
               }}
             />
           </View>

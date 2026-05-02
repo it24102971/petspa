@@ -1,5 +1,7 @@
 import SpaService from "../models/SpaService.js";
 import SpaBooking from "../models/SpaBooking.js";
+import Notification from "../models/Notification.js";
+import User from "../models/User.js";
 
 export const getServices = async (req, res) => {
   try {
@@ -68,6 +70,20 @@ export const verifyBooking = async (req, res) => {
       { new: true }
     );
     if (!booking) return res.status(404).json({ message: "Booking not found" });
+
+    // Notify all groomers
+    const groomers = await User.find({ role: "groomer" });
+    const notificationPromises = groomers.map(groomer => 
+      Notification.create({
+        recipient: groomer._id,
+        title: "New Grooming Job Available! 🐾",
+        message: `A new verified booking for ${booking.serviceName} is available to be picked up.`,
+        type: "booking",
+        link: "/groomer/appointments?type=jobs"
+      })
+    );
+    await Promise.all(notificationPromises);
+
     res.status(200).json(booking);
   } catch (error) {
     res.status(500).json({ message: "Error verifying booking", error: error.message });

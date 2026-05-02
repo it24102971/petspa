@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, Pressable, RefreshControl, Platform, Image, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, Pressable, RefreshControl, Platform, Image, ActivityIndicator, Alert, Modal, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -42,10 +42,6 @@ const CustomerDashboardContent = ({ user, onLogout, onExplore, onOpenSidebar, on
           </View>
         </View>
       </View>
-      <Pressable style={styles.logoutButton} onPress={onLogout} hitSlop={10}>
-        <Ionicons name="log-out-outline" size={18} color="#1A3B2F" />
-        <Text style={styles.logoutButtonText}>Logout</Text>
-      </Pressable>
     </View>
 
     <View style={styles.roleBadge}>
@@ -87,7 +83,11 @@ const CustomerDashboardContent = ({ user, onLogout, onExplore, onOpenSidebar, on
   </ScrollView>
 );
 
-const GroomerDashboardContent = ({ user, onLogout, onOpenSidebar, stats, router }: any) => (
+const GroomerDashboardContent = ({ user, onLogout, onOpenSidebar, stats, router, notifications, onMarkAsRead }: any) => {
+  const unreadCount = notifications.filter((n: any) => !n.isRead).length;
+  const [showNotifications, setShowNotifications] = useState(false);
+
+  return (
   <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
     {/* Header */}
     <View style={styles.header}>
@@ -97,11 +97,63 @@ const GroomerDashboardContent = ({ user, onLogout, onOpenSidebar, stats, router 
         </Pressable>
         <Text style={styles.dashboardTitle}>Dashboard</Text>
       </View>
-      <Pressable style={styles.logoutButton} onPress={onLogout} hitSlop={10}>
-        <Ionicons name="log-out-outline" size={18} color="#1A3B2F" />
-        <Text style={styles.logoutButtonText}>Logout</Text>
-      </Pressable>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+        <Pressable 
+          style={styles.notificationButton} 
+          onPress={() => {
+            setShowNotifications(true);
+            onMarkAsRead();
+          }}
+        >
+          <Ionicons name="notifications-outline" size={24} color="#1A3B2F" />
+          {unreadCount > 0 && <View style={styles.notificationBadge} />}
+        </Pressable>
+      </View>
     </View>
+
+    {/* Notification Modal */}
+    <Modal
+      visible={showNotifications}
+      animationType="slide"
+      transparent={true}
+      onRequestClose={() => setShowNotifications(false)}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.notificationModal}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Notifications</Text>
+            <TouchableOpacity onPress={() => setShowNotifications(false)}>
+              <Ionicons name="close" size={24} color="#1A3B2F" />
+            </TouchableOpacity>
+          </View>
+          <ScrollView style={styles.notificationList}>
+            {notifications.length > 0 ? (
+              notifications.map((notif: any) => (
+                <View key={notif._id} style={styles.notificationItem}>
+                  <View style={[styles.notifIcon, { backgroundColor: notif.type === 'booking' ? '#E8F5E9' : '#FFF3E0' }]}>
+                    <Ionicons 
+                      name={notif.type === 'booking' ? "calendar" : "notifications"} 
+                      size={20} 
+                      color={notif.type === 'booking' ? "#4CAF50" : "#FF9800"} 
+                    />
+                  </View>
+                  <View style={styles.notifText}>
+                    <Text style={styles.notifTitle}>{notif.title}</Text>
+                    <Text style={styles.notifMessage}>{notif.message}</Text>
+                    <Text style={styles.notifTime}>{new Date(notif.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
+                  </View>
+                </View>
+              ))
+            ) : (
+              <View style={styles.emptyNotif}>
+                <Ionicons name="notifications-off-outline" size={40} color="#ccc" />
+                <Text style={styles.emptyNotifText}>No notifications yet</Text>
+              </View>
+            )}
+          </ScrollView>
+        </View>
+      </View>
+    </Modal>
 
 
     {/* Welcome Card */}
@@ -162,7 +214,7 @@ const GroomerDashboardContent = ({ user, onLogout, onOpenSidebar, stats, router 
       <View style={styles.actionCards}>
         <Pressable 
           style={styles.manageActionCard} 
-          onPress={() => router.push('/groomer/appointments' as any)}
+          onPress={() => router.push({ pathname: '/groomer/appointments', params: { type: 'schedule' } } as any)}
         >
           <View style={[styles.manageActionIcon, { backgroundColor: '#FFD16620' }]}>
             <Ionicons name="calendar-outline" size={24} color="#FFD166" />
@@ -172,7 +224,7 @@ const GroomerDashboardContent = ({ user, onLogout, onOpenSidebar, stats, router 
         </Pressable>
         <Pressable 
           style={styles.manageActionCard} 
-          onPress={() => router.push('/groomer/appointments' as any)}
+          onPress={() => router.push({ pathname: '/groomer/appointments', params: { type: 'jobs' } } as any)}
         >
           <View style={[styles.manageActionIcon, { backgroundColor: '#1A3B2F20' }]}>
             <Ionicons name="search-outline" size={24} color="#1A3B2F" />
@@ -214,7 +266,8 @@ const GroomerDashboardContent = ({ user, onLogout, onOpenSidebar, stats, router 
       ))}
     </View>
   </ScrollView>
-);
+  );
+};
 
 const AdminDashboardContent = ({ user, onLogout, onOpenSidebar, onAddGroomer, onManageGroomers, router }: any) => (
   <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -226,10 +279,6 @@ const AdminDashboardContent = ({ user, onLogout, onOpenSidebar, onAddGroomer, on
         </Pressable>
         <Text style={styles.dashboardTitle}>Admin Panel</Text>
       </View>
-      <Pressable style={styles.logoutButton} onPress={onLogout} hitSlop={10}>
-        <Ionicons name="log-out-outline" size={18} color="#1A3B2F" />
-        <Text style={styles.logoutButtonText}>Logout</Text>
-      </Pressable>
     </View>
 
     {/* Welcome Card */}
@@ -348,8 +397,22 @@ export default function DashboardScreen() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [groomerStats, setGroomerStats] = useState<any>(null);
+  const [notifications, setNotifications] = useState<any[]>([]);
   const { openSidebar } = useSidebar();
   const router = useRouter();
+
+  const markNotificationsRead = async () => {
+    try {
+      const token = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
+      await fetch(`${API_BASE_URL}/notifications/read-all`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+    } catch (error) {
+      console.error("Mark as read failed:", error);
+    }
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -369,6 +432,14 @@ export default function DashboardScreen() {
               if (statsRes.ok) {
                 const statsData = await statsRes.json();
                 setGroomerStats(statsData);
+              }
+
+              const notifRes = await fetch(`${API_BASE_URL}/notifications`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+              });
+              if (notifRes.ok) {
+                const notifData = await notifRes.json();
+                setNotifications(notifData);
               }
             }
           }
@@ -441,6 +512,8 @@ export default function DashboardScreen() {
             onOpenSidebar={openSidebar}
             stats={groomerStats}
             router={router}
+            notifications={notifications}
+            onMarkAsRead={markNotificationsRead}
           />
         ) : (
           <CustomerDashboardContent 
@@ -732,16 +805,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginLeft: -4, // Adjust for notification button alignment
   },
-  notificationButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    backgroundColor: '#ffffff',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(26, 59, 47, 0.05)',
-  },
   welcomeCardContainer: {
     backgroundColor: '#ffffff',
     borderRadius: 24,
@@ -931,6 +994,101 @@ const styles = StyleSheet.create({
   },
   actionSub: {
     fontSize: 12,
+    color: '#999',
+    fontWeight: '600',
+  },
+  // Notification Styles
+  notificationButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: '#ffffff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(26, 59, 47, 0.05)',
+    position: 'relative',
+  },
+  notificationBadge: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#FF5252',
+    borderWidth: 2,
+    borderColor: '#ffffff',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  notificationModal: {
+    backgroundColor: '#ffffff',
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    height: '70%',
+    padding: 24,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '900',
+    color: '#1A3B2F',
+  },
+  notificationList: {
+    flex: 1,
+  },
+  notificationItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  notifIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 16,
+  },
+  notifText: {
+    flex: 1,
+  },
+  notifTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#1A3B2F',
+    marginBottom: 2,
+  },
+  notifMessage: {
+    fontSize: 13,
+    color: 'rgba(26, 59, 47, 0.6)',
+    lineHeight: 18,
+    marginBottom: 4,
+  },
+  notifTime: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#999',
+  },
+  emptyNotif: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 60,
+  },
+  emptyNotifText: {
+    marginTop: 16,
+    fontSize: 14,
     color: '#999',
     fontWeight: '600',
   },
