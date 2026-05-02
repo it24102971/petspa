@@ -139,6 +139,13 @@ const Sidebar = ({ isVisible, onClose }: SidebarProps) => {
               label="My Profile"
               onPress={() => handleNavigate('/(tabs)/profile')}
             />
+            {user?.role === 'customer' && (
+              <SidebarItem
+                icon="paw-outline"
+                label="My Pets"
+                onPress={() => handleNavigate('/pets')}
+              />
+            )}
             <SidebarItem
               icon="notifications-outline"
               label="Notifications"

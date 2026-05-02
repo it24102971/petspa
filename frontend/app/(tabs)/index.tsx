@@ -13,7 +13,7 @@ const ONBOARDING_SEEN_KEY = "onboarding:seen";
 
 // --- Components ---
 
-const CustomerDashboardContent = ({ user, onLogout, onExplore, onOpenSidebar }: any) => (
+const CustomerDashboardContent = ({ user, onLogout, onExplore, onOpenSidebar, onPets }: any) => (
   <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
     <View style={styles.header}>
       <View style={styles.headerLeft}>
@@ -49,10 +49,10 @@ const CustomerDashboardContent = ({ user, onLogout, onExplore, onOpenSidebar }: 
         <Text style={styles.statNumber}>12</Text>
         <Text style={styles.statLabel}>Bookings</Text>
       </View>
-      <View style={styles.statCard}>
+      <Pressable style={styles.statCard} onPress={onPets}>
         <Text style={styles.statNumber}>05</Text>
         <Text style={styles.statLabel}>Pets</Text>
-      </View>
+      </Pressable>
       <View style={styles.statCard}>
         <Text style={styles.statNumber}>08</Text>
         <Text style={styles.statLabel}>Reviews</Text>
@@ -388,6 +388,7 @@ export default function DashboardScreen() {
             onLogout={handleLogout} 
             onExplore={() => router.push('/(tabs)/explore')} 
             onOpenSidebar={openSidebar}
+            onPets={() => router.push('/pets')}
           />
         )}
       </SafeAreaView>

@@ -65,6 +65,13 @@ const parseInputDate = (dateStr: string) => {
 
 const getTodayInputDate = () => formatInputDate(new Date());
 
+const getImageUrl = (url: string | null | undefined) => {
+  if (!url) return null;
+  if (url.startsWith('http')) return url;
+  const baseUrl = API_BASE_URL.replace('/api', '');
+  return `${baseUrl}${url}`;
+};
+
 // ─── Star Rating Component ──────────────────────────────────────────
 const StarRating = ({ rating, onRate, size = 22 }: { rating: number; onRate?: (r: number) => void; size?: number }) => (
   <View style={{ flexDirection: 'row', gap: 3 }}>
@@ -117,7 +124,7 @@ const DiaryCard = ({
       {/* Body */}
       {entry.photoUrl ? (
         <Image
-          source={{ uri: entry.photoUrl }}
+          source={{ uri: getImageUrl(entry.photoUrl) || '' }}
           style={{ width: '100%', height: 210, borderRadius: 18, marginBottom: 14, backgroundColor: 'rgba(26,59,47,0.06)' }}
           resizeMode="cover"
         />
@@ -270,7 +277,7 @@ const DiaryFormModal = ({
             {(selectedImage?.uri || initial?.photoUrl) ? (
               <View style={s.imagePreviewWrap}>
                 <Image
-                  source={{ uri: selectedImage?.uri || initial?.photoUrl || '' }}
+                  source={{ uri: selectedImage?.uri || getImageUrl(initial?.photoUrl) || '' }}
                   style={s.imagePreview}
                   resizeMode="cover"
                 />

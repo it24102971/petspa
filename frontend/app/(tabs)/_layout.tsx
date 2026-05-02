@@ -109,6 +109,14 @@ function TabLayoutContent() {
         />
         
         <Tabs.Screen
+          name="diary"
+          options={{
+            title: 'Diary',
+            tabBarIcon: ({ color }) => <Ionicons size={26} name="book" color={color} />,
+          }}
+        />
+        
+        <Tabs.Screen
           name="profile"
           options={{
             title: 'Profile',
