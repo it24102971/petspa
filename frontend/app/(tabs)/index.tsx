@@ -234,25 +234,7 @@ const AdminDashboardContent = ({ user, onLogout, onOpenSidebar, onAddGroomer, on
       </View>
     </View>
 
-    {/* Quick Actions */}
-    <View style={styles.sectionHeader}>
-      <Text style={styles.sectionTitleText}>Quick Actions</Text>
-    </View>
-    
-    <View style={styles.statsRow}>
-      <Pressable style={[styles.statBox, { backgroundColor: '#1A3B2F' }]} onPress={onAddGroomer}>
-        <View style={styles.statBoxHeader}>
-          <Ionicons name="person-add" size={22} color="#FFD166" />
-        </View>
-        <Text style={[styles.statBoxLabel, { color: '#ffffff' }]}>Add Groomer</Text>
-      </Pressable>
-      <Pressable style={[styles.statBox, { backgroundColor: '#FFD166' }]} onPress={onManageGroomers}>
-        <View style={styles.statBoxHeader}>
-          <Ionicons name="people" size={22} color="#1A3B2F" />
-        </View>
-        <Text style={[styles.statBoxLabel, { color: '#1A3B2F' }]}>Groomer Mgmt</Text>
-      </Pressable>
-    </View>
+
 
     {/* Recent Activity */}
     <View style={[styles.sectionHeader, { marginTop: 24 }]}>

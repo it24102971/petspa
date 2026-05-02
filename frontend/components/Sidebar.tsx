@@ -10,7 +10,9 @@ import {
   Platform,
   Image,
   Alert,
+  ScrollView,
 } from 'react-native';
+
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -110,7 +112,14 @@ const Sidebar = ({ isVisible, onClose }: SidebarProps) => {
 
           <View style={styles.divider} />
 
-          <View style={styles.menuList}>
+          <ScrollView 
+            style={{ flex: 1 }}
+            contentContainerStyle={styles.menuList} 
+            showsVerticalScrollIndicator={false}
+            bounces={true}
+          >
+
+
             <SidebarItem
               icon="home-outline"
               label="Home"
@@ -198,10 +207,12 @@ const Sidebar = ({ isVisible, onClose }: SidebarProps) => {
               label="Help Center"
               onPress={() => {}}
             />
-            <View style={styles.divider} />
-            <SidebarItem
-              icon="log-out-outline"
-              label="Logout"
+
+          </ScrollView>
+
+          <View style={styles.footer}>
+            <Pressable 
+              style={({ pressed }) => [styles.logoutSidebarButton, pressed && { opacity: 0.7 }]}
               onPress={() => {
                 Alert.alert(
                   "Logout",
@@ -231,12 +242,13 @@ const Sidebar = ({ isVisible, onClose }: SidebarProps) => {
                   ]
                 );
               }}
-            />
-          </View>
-
-          <View style={styles.footer}>
+            >
+              <Ionicons name="log-out-outline" size={20} color="#ffffff" />
+              <Text style={styles.logoutSidebarText}>Logout</Text>
+            </Pressable>
             <Text style={styles.versionText}>Version 1.0.0</Text>
           </View>
+
         </SafeAreaView>
       </Animated.View>
     </View>
@@ -327,9 +339,10 @@ const styles = StyleSheet.create({
     marginVertical: 12,
   },
   menuList: {
-    flex: 1,
     paddingHorizontal: 12,
+    paddingBottom: 20,
   },
+
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -356,6 +369,27 @@ const styles = StyleSheet.create({
     color: 'rgba(26, 59, 47, 0.4)',
     fontWeight: '600',
   },
+  logoutSidebarButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1A3B2F',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    gap: 10,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  logoutSidebarText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '700',
+  },
 });
+
 
 export default Sidebar;

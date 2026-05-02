@@ -77,26 +77,22 @@ function TabLayoutContent() {
           name="index"
           options={{
             title: 'Home',
-            tabBarIcon: ({ color }) => <Ionicons size={26} name="home" color={color} />,
-          }}
-        />
-        
-        <Tabs.Screen
-          name="explore"
-          options={{
-            title: 'Explore',
-            tabBarIcon: ({ color }) => <Ionicons size={26} name="search" color={color} />,
-            href: userRole === 'groomer' ? null : '/explore',
+            tabBarIcon: ({ color }) => <Ionicons size={24} name="home" color={color} />,
           }}
         />
 
-
-        
         <Tabs.Screen
           name="appointments"
           options={{
             title: 'Appointments',
-            tabBarIcon: ({ color }) => <Ionicons size={26} name="calendar" color={color} />,
+            tabBarIcon: ({ color }) => <Ionicons size={24} name="calendar" color={color} />,
+          }}
+        />
+
+        <Tabs.Screen
+          name="explore"
+          options={{
+            href: null, // Hide from tab bar
           }}
         />
 
@@ -104,35 +100,33 @@ function TabLayoutContent() {
           name="spa"
           options={{
             title: 'Spa',
-            tabBarIcon: ({ color }) => <Ionicons size={26} name="sparkles" color={color} />,
+            tabBarIcon: ({ color }) => <Ionicons size={24} name="sparkles" color={color} />,
             href: userRole === 'groomer' ? null : '/spa',
           }}
         />
-        
-        <Tabs.Screen
-          name="history"
-          options={{
-            title: 'History',
-            tabBarIcon: ({ color }) => <Ionicons size={26} name="time" color={color} />,
-          }}
-        />
-        
-        <Tabs.Screen
-          name="diary"
-          options={{
-            title: 'Diary',
-            tabBarIcon: ({ color }) => <Ionicons size={26} name="book" color={color} />,
-            href: userRole === 'admin' ? null : '/diary',
-          }}
-        />
-        
+
         <Tabs.Screen
           name="profile"
           options={{
             title: 'Profile',
-            tabBarIcon: ({ color }) => <Ionicons size={26} name="person" color={color} />,
+            tabBarIcon: ({ color }) => <Ionicons size={24} name="person" color={color} />,
           }}
         />
+
+        <Tabs.Screen
+          name="history"
+          options={{
+            href: null, // Hide from tab bar
+          }}
+        />
+
+        <Tabs.Screen
+          name="diary"
+          options={{
+            href: null, // Hide from tab bar
+          }}
+        />
+
       </Tabs>
       
       <Sidebar 
