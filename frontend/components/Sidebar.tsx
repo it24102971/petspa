@@ -223,6 +223,7 @@ const Sidebar = ({ isVisible, onClose }: SidebarProps) => {
               onPress={() => {}}
             />
 
+          </ScrollView>
 
           <View style={styles.footer}>
             <Pressable 

@@ -146,8 +146,18 @@ export const loginUser = async (req, res) => {
 export const updateUserProfile = async (req, res) => {
   try {
     const userId = req.user._id;
+    const { fullName, email, phoneNumber, address, experience, specialization, aboutMe, profilePicture } = req.body;
 
-    }
+    const updateData = {
+      fullName,
+      email,
+      phoneNumber,
+      address,
+      experience,
+      specialization,
+      aboutMe,
+      profilePicture
+    };
 
     const updatedUser = await User.findByIdAndUpdate(
       userId,
@@ -173,5 +183,30 @@ export const updateUserProfile = async (req, res) => {
     });
   } catch (error) {
     return res.status(500).json({ message: "Failed to update profile.", error: error.message });
+  }
+};
+
+export const uploadProfilePicture = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    const imageUrl = `/uploads/pets/${req.file.filename}`;
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      { profilePicture: imageUrl },
+      { new: true }
+    );
+
+    res.status(200).json({ 
+      message: "Profile picture uploaded successfully",
+      user: {
+        ...user.toObject(),
+        id: user._id
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Upload failed", error: error.message });
   }
 };

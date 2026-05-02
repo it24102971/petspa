@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, Pressable, RefreshControl, Platform, Image, ActivityIndicator, Alert, Modal, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
- main
+import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { useSidebar } from '@/context/SidebarContext';
@@ -21,7 +21,7 @@ const getImageUrl = (url: string | null | undefined) => {
 
 // --- Components ---
 
-
+const CustomerDashboardContent = ({ user, onLogout, onExplore, onOpenSidebar, onCafe, onPets }: any) => (
   <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
     <View style={styles.header}>
       <View style={styles.headerLeft}>
@@ -97,7 +97,18 @@ const GroomerDashboardContent = ({ user, onLogout, onOpenSidebar, stats, router,
         </Pressable>
         <Text style={styles.dashboardTitle}>Dashboard</Text>
       </View>
-
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+        <Pressable 
+          style={styles.notificationButton} 
+          onPress={() => {
+            setShowNotifications(true);
+            onMarkAsRead();
+          }}
+        >
+          <Ionicons name="notifications-outline" size={24} color="#1A3B2F" />
+          {unreadCount > 0 && <View style={styles.notificationBadge} />}
+        </Pressable>
+      </View>
     </View>
 
     {/* Notification Modal */}
@@ -144,7 +155,6 @@ const GroomerDashboardContent = ({ user, onLogout, onOpenSidebar, stats, router,
       </View>
     </Modal>
 
-
     {/* Welcome Card */}
     <View style={styles.welcomeCardContainer}>
       <View style={styles.welcomeCardContent}>
@@ -158,42 +168,27 @@ const GroomerDashboardContent = ({ user, onLogout, onOpenSidebar, stats, router,
           )}
         </View>
         <View style={styles.welcomeTextContainer}>
-          <Text style={styles.welcomeGreeting}>Hello, {user?.fullName.split(' ')[0] || 'Groomer'}! 👋</Text>
-          <Text style={styles.welcomeSubtext}>Welcome back to your dashboard</Text>
+          <Text style={styles.welcomeGreeting}>Hello, {user?.fullName?.split(' ')[0] || 'Groomer'}! 👋</Text>
+          <Text style={styles.welcomeSubtext}>You have {stats?.todayCount || 0} jobs scheduled for today.</Text>
         </View>
       </View>
     </View>
 
-    {/* Stats Grid */}
-    <View style={styles.statsGrid}>
-      <View style={styles.statsRow}>
-        <View style={[styles.statBox, { backgroundColor: '#ffffff' }]}>
-          <View style={styles.statBoxHeader}>
-            <Text style={styles.statBoxNumber}>4.8</Text>
-            <Ionicons name="star" size={20} color="#FFD166" />
-          </View>
-          <Text style={styles.statBoxLabel}>Average Rating</Text>
+    {/* Stats Row */}
+    <View style={styles.statsRow}>
+      <View style={[styles.statBox, { backgroundColor: '#ffffff' }]}>
+        <View style={styles.statBoxHeader}>
+          <Text style={styles.statBoxNumber}>{stats?.todayCount || 0}</Text>
+          <Ionicons name="calendar" size={20} color="#FFD166" />
         </View>
-        <View style={[styles.statBox, { backgroundColor: '#F0F0FF' }]}>
-          <Text style={styles.statBoxNumber}>12</Text>
-          <Text style={styles.statBoxLabel}>Total Reviews</Text>
-        </View>
+        <Text style={styles.statBoxLabel}>Today's Jobs</Text>
       </View>
-      <View style={styles.statsRow}>
-        <View style={[styles.statBox, { backgroundColor: '#E8F5E9' }]}>
-          <View style={styles.statBoxHeader}>
-            <Text style={styles.statBoxNumber}>{stats?.todayCount || 0}</Text>
-            <Ionicons name="calendar" size={20} color="#4CAF50" />
-          </View>
-          <Text style={styles.statBoxLabel}>Today's Appointments</Text>
+      <View style={[styles.statBox, { backgroundColor: '#ffffff' }]}>
+        <View style={styles.statBoxHeader}>
+          <Text style={styles.statBoxNumber}>{stats?.pendingVerified || 0}</Text>
+          <Ionicons name="alert-circle" size={20} color="#2196F3" />
         </View>
-        <View style={[styles.statBox, { backgroundColor: '#E3F2FD' }]}>
-          <View style={styles.statBoxHeader}>
-            <Text style={styles.statBoxNumber}>{stats?.pendingVerified || 0}</Text>
-            <Ionicons name="alert-circle" size={20} color="#2196F3" />
-          </View>
-          <Text style={styles.statBoxLabel}>Available Jobs</Text>
-        </View>
+        <Text style={styles.statBoxLabel}>Available Jobs</Text>
       </View>
     </View>
 
@@ -224,12 +219,6 @@ const GroomerDashboardContent = ({ user, onLogout, onOpenSidebar, stats, router,
       </View>
     </View>
 
-    {/* Schedule Header */}
-    <View style={styles.sectionHeader}>
-      <Text style={styles.sectionTitleText}>Today's Schedule</Text>
-      <Pressable><Text style={styles.viewAllTextLink}>View All</Text></Pressable>
-    </View>
-
     {/* Schedule List */}
     <View style={styles.scheduleList}>
       {[
@@ -254,7 +243,7 @@ const GroomerDashboardContent = ({ user, onLogout, onOpenSidebar, stats, router,
         </View>
       ))}
     </View>
-  </ScrollView>
+    </ScrollView>
   );
 };
 
@@ -329,12 +318,10 @@ const AdminDashboardContent = ({ user, onLogout, onOpenSidebar, onAddGroomer, on
             <Text style={styles.statBoxNumber}>4.9</Text>
             <Ionicons name="star" size={20} color="#FFD166" />
           </View>
-          <Text style={styles.statBoxLabel}>System Rating</Text>
+          <Text style={styles.statBoxLabel}>Avg Rating</Text>
         </View>
       </View>
     </View>
-
-
 
     {/* Management Section */}
     <View style={[styles.sectionHeader, { marginTop: 24 }]}>
@@ -359,39 +346,6 @@ const AdminDashboardContent = ({ user, onLogout, onOpenSidebar, onAddGroomer, on
         </View>
         <Text style={styles.managementLabel}>New Groomer</Text>
       </Pressable>
-    </View>
-
-    {/* Recent Activity */}
-    <View style={[styles.sectionHeader, { marginTop: 24 }]}>
-      <Text style={styles.sectionTitleText}>System Activity</Text>
-      <Pressable><Text style={styles.viewAllTextLink}>View Logs</Text></Pressable>
-    </View>
-
-    <View style={styles.scheduleList}>
-      <View style={styles.scheduleCard}>
-        <View style={styles.petAvatarSmall}>
-          <Ionicons name="notifications" size={24} color="#1A3B2F" />
-        </View>
-        <View style={styles.scheduleInfo}>
-          <Text style={styles.petNameText}>New Groomer Request</Text>
-          <Text style={styles.petBreedText}>Paws & Palms Grooming</Text>
-        </View>
-        <View style={styles.scheduleTimeStatus}>
-          <Text style={styles.scheduleTimeText}>10m ago</Text>
-        </View>
-      </View>
-      <View style={styles.scheduleCard}>
-        <View style={styles.petAvatarSmall}>
-          <Ionicons name="shield-checkmark" size={24} color="#1A3B2F" />
-        </View>
-        <View style={styles.scheduleInfo}>
-          <Text style={styles.petNameText}>Security Update</Text>
-          <Text style={styles.petBreedText}>System firewall active</Text>
-        </View>
-        <View style={styles.scheduleTimeStatus}>
-          <Text style={styles.scheduleTimeText}>1h ago</Text>
-        </View>
-      </View>
     </View>
   </ScrollView>
 );
@@ -521,7 +475,14 @@ export default function DashboardScreen() {
             onMarkAsRead={markNotificationsRead}
           />
         ) : (
-
+          <CustomerDashboardContent 
+            user={user} 
+            onLogout={handleLogout}
+            onExplore={() => router.push('/(tabs)/explore')}
+            onOpenSidebar={openSidebar}
+            onCafe={() => router.push('/cafe' as any)}
+            onPets={() => router.push('/(tabs)/profile')}
+            router={router}
           />
         )}
       </SafeAreaView>
@@ -579,65 +540,53 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 24,
   },
   headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-  },
-  headerUserContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  headerAvatar: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: '#F0FAF5',
-  },
-  headerAvatarPlaceholder: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: '#F0FAF5',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(26, 59, 47, 0.05)',
-  },
-  dashboardTitle: {
-    fontSize: 20,
-    fontWeight: '900',
-    color: '#1A3B2F',
-    marginLeft: 4,
+    gap: 16,
   },
   menuButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
+    width: 48,
+    height: 48,
+    borderRadius: 16,
     backgroundColor: '#ffffff',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: 'rgba(26, 59, 47, 0.05)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
-    elevation: 2,
+  },
+  headerUserContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  headerAvatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 15,
+  },
+  headerAvatarPlaceholder: {
+    width: 44,
+    height: 44,
+    borderRadius: 15,
+    backgroundColor: '#ffffff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(26, 59, 47, 0.05)',
   },
   welcomeText: {
-    fontSize: 15,
+    fontSize: 13,
     color: 'rgba(26, 59, 47, 0.6)',
-    fontWeight: '500',
+    fontWeight: '600',
   },
   userName: {
-    fontSize: 26,
-    fontWeight: '900',
+    fontSize: 17,
+    fontWeight: '800',
     color: '#1A3B2F',
-    letterSpacing: -0.5,
+    marginTop: -2,
   },
   logoutButton: {
     flexDirection: 'row',
@@ -655,28 +604,27 @@ const styles = StyleSheet.create({
   },
   logoutButtonText: {
     color: '#1A3B2F',
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '800',
   },
   roleBadge: {
-    backgroundColor: 'rgba(26, 59, 47, 0.08)',
+    backgroundColor: '#1A3B2F',
+    alignSelf: 'flex-start',
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 10,
-    alignSelf: 'flex-start',
-    marginBottom: 28,
+    borderRadius: 8,
+    marginBottom: 24,
   },
   roleText: {
-    fontSize: 12,
+    color: '#FFD166',
+    fontSize: 10,
     fontWeight: '900',
-    color: '#1A3B2F',
-    letterSpacing: 1.2,
+    letterSpacing: 1,
   },
   statsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    gap: 16,
     marginBottom: 32,
-    gap: 12,
   },
   statCard: {
     flex: 1,
@@ -700,37 +648,31 @@ const styles = StyleSheet.create({
     color: '#1A3B2F',
   },
   statLabel: {
-    fontSize: 11,
-    color: 'rgba(26, 59, 47, 0.4)',
+    fontSize: 12,
+    color: 'rgba(26, 59, 47, 0.5)',
+    fontWeight: '700',
     marginTop: 4,
-    fontWeight: '800',
-    textTransform: 'uppercase',
   },
   sectionTitle: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: '900',
     color: '#1A3B2F',
-    marginBottom: 18,
-    letterSpacing: -0.3,
+    marginBottom: 16,
+    letterSpacing: -0.5,
   },
   emptyState: {
     backgroundColor: '#ffffff',
-    borderRadius: 28,
-    padding: 32,
+    borderRadius: 30,
+    padding: 40,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(26, 59, 47, 0.1)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 2,
+    borderColor: 'rgba(26, 59, 47, 0.05)',
   },
   emptyIconContainer: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    backgroundColor: 'rgba(255, 209, 102, 0.15)',
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#FFD16620',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 20,
@@ -739,14 +681,15 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '800',
     color: '#1A3B2F',
+    textAlign: 'center',
     marginBottom: 8,
   },
   emptyStateSub: {
     fontSize: 14,
-    color: 'rgba(26, 59, 47, 0.5)',
+    color: 'rgba(26, 59, 47, 0.6)',
     textAlign: 'center',
-    lineHeight: 22,
-    marginBottom: 26,
+    marginBottom: 24,
+    lineHeight: 20,
   },
   actionButton: {
     backgroundColor: '#FFD166',
@@ -763,90 +706,14 @@ const styles = StyleSheet.create({
   },
   actionButtonText: {
     color: '#1A3B2F',
-    fontWeight: '900',
     fontSize: 16,
+    fontWeight: '900',
   },
-  quickActionsGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 32,
-  },
-  quickActionItem: {
-    alignItems: 'center',
-    gap: 8,
-    width: '30%',
-  },
-  actionIcon: {
-    width: 60,
-    height: 60,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 1,
-  },
-  actionLabel: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: 'rgba(26, 59, 47, 0.7)',
-  },
-  managerCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 28,
-    padding: 24,
-    borderWidth: 1,
-    borderColor: 'rgba(26, 59, 47, 0.1)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 2,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  cardTitle: {
-    fontSize: 18,
+  dashboardTitle: {
+    fontSize: 22,
     fontWeight: '900',
     color: '#1A3B2F',
-  },
-  viewAllText: {
-    fontSize: 13,
-    color: '#FFD166',
-    fontWeight: '800',
-  },
-  activityItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginBottom: 16,
-  },
-  activityDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#81C784',
-  },
-  activityText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#1A3B2F',
-  },
-  activityTime: {
-    fontSize: 11,
-    color: 'rgba(26, 59, 47, 0.4)',
-    marginTop: 2,
-  },
-  // Groomer Redesign Styles
-  headerTitleCenter: {
-    fontSize: 20,
-    fontWeight: '900',
-    color: '#1A3B2F',
-    flex: 1,
-    textAlign: 'center',
-    marginLeft: -4, // Adjust for notification button alignment
+    letterSpacing: -0.5,
   },
   welcomeCardContainer: {
     backgroundColor: '#ffffff',
@@ -867,45 +734,39 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   groomerAvatarContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 60,
+    height: 60,
+    borderRadius: 20,
     backgroundColor: '#F0FAF5',
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(26, 59, 47, 0.1)',
+  },
+  groomerAvatarImage: {
+    width: '100%',
+    height: '100%',
   },
   groomerAvatarPlaceholder: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  groomerAvatarImage: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 45,
-  },
   welcomeTextContainer: {
     flex: 1,
   },
   welcomeGreeting: {
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: '900',
     color: '#1A3B2F',
-    marginBottom: 4,
   },
   welcomeSubtext: {
-    fontSize: 14,
+    fontSize: 13,
     color: 'rgba(26, 59, 47, 0.6)',
-    lineHeight: 20,
-  },
-  statsGrid: {
-    gap: 12,
-    marginBottom: 32,
+    marginTop: 2,
+    fontWeight: '600',
   },
   statsRow: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 16,
+    marginBottom: 16,
   },
   statBox: {
     flex: 1,
@@ -919,18 +780,102 @@ const styles = StyleSheet.create({
   statBoxHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: 8,
   },
   statBoxNumber: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: '900',
     color: '#1A3B2F',
   },
   statBoxLabel: {
     fontSize: 12,
-    fontWeight: '700',
     color: 'rgba(26, 59, 47, 0.5)',
+    fontWeight: '800',
+  },
+  manageSection: {
+    marginTop: 8,
+  },
+  manageActionCard: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(26, 59, 47, 0.05)',
+  },
+  manageActionIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  actionTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#1A3B2F',
+  },
+  actionCards: {
+    flexDirection: 'row',
+    gap: 16,
+  },
+  scheduleList: {
+    marginTop: 24,
+  },
+  scheduleCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    padding: 12,
+    borderRadius: 18,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(26, 59, 47, 0.05)',
+  },
+  petAvatarSmall: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    backgroundColor: '#F0FAF5',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  scheduleInfo: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  petNameText: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#1A3B2F',
+  },
+  petBreedText: {
+    fontSize: 12,
+    color: 'rgba(26, 59, 47, 0.5)',
+    fontWeight: '600',
+  },
+  scheduleTimeStatus: {
+    alignItems: 'flex-end',
+  },
+  scheduleTimeText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#1A3B2F',
+    marginBottom: 4,
+  },
+  statusBadgeSmall: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  statusBadgeTextSmall: {
+    fontSize: 10,
+    fontWeight: '900',
+  },
+  statsGrid: {
+    marginBottom: 8,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -939,103 +884,10 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   sectionTitleText: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '900',
     color: '#1A3B2F',
-  },
-  viewAllTextLink: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: '#FFD166', // Using brand yellow for consistency
-  },
-  scheduleList: {
-    gap: 12,
-  },
-  scheduleCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#ffffff',
-    borderRadius: 20,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(26, 59, 47, 0.05)',
-  },
-  petAvatarSmall: {
-    width: 60,
-    height: 60,
-    borderRadius: 12,
-    backgroundColor: '#F0FAF5',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  scheduleInfo: {
-    flex: 1,
-  },
-  petNameText: {
-    fontSize: 16,
-    fontWeight: '900',
-    color: '#1A3B2F',
-    marginBottom: 2,
-  },
-  petBreedText: {
-    fontSize: 13,
-    color: 'rgba(26, 59, 47, 0.5)',
-    fontWeight: '600',
-  },
-  scheduleTimeStatus: {
-    alignItems: 'flex-end',
-    gap: 6,
-  },
-  scheduleTimeText: {
-    fontSize: 13,
-    fontWeight: '800',
-    color: 'rgba(26, 59, 47, 0.7)',
-  },
-  statusBadgeSmall: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  statusBadgeTextSmall: {
-    fontSize: 11,
-    fontWeight: '900',
-  },
-  manageSection: {
-    marginTop: 30,
-    paddingHorizontal: 0,
-  },
-  actionCards: {
-    flexDirection: 'row',
-    paddingHorizontal: 20,
-    gap: 15,
-  },
-  manageActionCard: {
-    flex: 1,
-    backgroundColor: '#fff',
-    borderRadius: 24,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: '#eee',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 2,
-  },
-  manageActionIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 15,
-  },
-  actionTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: '#1A3B2F',
-    marginBottom: 4,
+    letterSpacing: -0.5,
   },
   actionSub: {
     fontSize: 12,
