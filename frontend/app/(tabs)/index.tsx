@@ -11,6 +11,13 @@ const AUTH_STATUS_KEY = "auth:isSignedIn";
 const AUTH_TOKEN_KEY = "auth:token";
 const ONBOARDING_SEEN_KEY = "onboarding:seen";
 
+const getImageUrl = (url: string | null | undefined) => {
+  if (!url) return null;
+  if (url.startsWith('http')) return url;
+  const baseUrl = API_BASE_URL.replace('/api', '');
+  return `${baseUrl}${url}`;
+};
+
 // --- Components ---
 
 const CustomerDashboardContent = ({ user, onLogout, onExplore, onOpenSidebar, onPets }: any) => (
@@ -22,7 +29,7 @@ const CustomerDashboardContent = ({ user, onLogout, onExplore, onOpenSidebar, on
         </Pressable>
         <View style={styles.headerUserContainer}>
           {user?.profilePicture ? (
-            <Image source={{ uri: user.profilePicture }} style={styles.headerAvatar} />
+            <Image source={{ uri: getImageUrl(user.profilePicture) || '' }} style={styles.headerAvatar} />
           ) : (
             <View style={styles.headerAvatarPlaceholder}>
               <Ionicons name="person" size={18} color="#1A3B2F" />
@@ -87,7 +94,7 @@ const GroomerDashboardContent = ({ user, onLogout, onOpenSidebar }: any) => (
       <View style={styles.welcomeCardContent}>
         <View style={styles.groomerAvatarContainer}>
           {user?.profilePicture ? (
-            <Image source={{ uri: user.profilePicture }} style={styles.groomerAvatarImage} />
+            <Image source={{ uri: getImageUrl(user.profilePicture) || '' }} style={styles.groomerAvatarImage} />
           ) : (
             <View style={styles.groomerAvatarPlaceholder}>
               <Ionicons name="person" size={50} color="#1A3B2F" />
@@ -184,7 +191,7 @@ const AdminDashboardContent = ({ user, onLogout, onOpenSidebar, onAddGroomer, on
       <View style={styles.welcomeCardContent}>
         <View style={styles.groomerAvatarContainer}>
           {user?.profilePicture ? (
-            <Image source={{ uri: user.profilePicture }} style={styles.groomerAvatarImage} />
+            <Image source={{ uri: getImageUrl(user.profilePicture) || '' }} style={styles.groomerAvatarImage} />
           ) : (
             <View style={styles.groomerAvatarPlaceholder}>
               <Ionicons name="person" size={50} color="#1A3B2F" />

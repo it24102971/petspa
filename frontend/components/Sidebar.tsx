@@ -72,7 +72,7 @@ const Sidebar = ({ isVisible, onClose }: SidebarProps) => {
         if (finished) setShouldRender(false);
       });
     }
-  }, [isVisible]);
+  }, [isVisible, opacityAnim, slideAnim]);
 
   const handleNavigate = (path: string) => {
     onClose();

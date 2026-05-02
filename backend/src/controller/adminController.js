@@ -56,7 +56,7 @@ export const getGroomers = async (req, res) => {
 
 export const addGroomer = async (req, res) => {
   try {
-    const { fullName, email, phoneNumber, password } = req.body;
+    const { fullName, email, phoneNumber, password, experience, specialization, availableDays, availableTime } = req.body;
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
@@ -69,6 +69,10 @@ export const addGroomer = async (req, res) => {
       email,
       phoneNumber,
       password: hashedPassword,
+      experience,
+      specialization,
+      availableDays,
+      availableTime,
       role: "groomer",
     });
 
@@ -88,7 +92,25 @@ export const addGroomer = async (req, res) => {
 // Pet Management
 export const getAllPets = async (req, res) => {
   try {
-    const pets = await Pet.find().populate("owner", "fullName email");
+    const { search, type } = req.query;
+    let filter = {};
+
+    if (type && type !== "all") {
+      filter.type = new RegExp(`^${type}$`, "i");
+    }
+
+    if (search) {
+      const searchRegex = new RegExp(search, "i");
+      // Search by pet name OR owner name (via population or sub-query)
+      // Since owner is a reference, we might need a more complex query or filter in memory.
+      // For now, let's search by pet name and breed.
+      filter.$or = [
+        { name: searchRegex },
+        { breed: searchRegex }
+      ];
+    }
+
+    const pets = await Pet.find(filter).populate("owner", "fullName email");
     res.status(200).json(pets);
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch pets.", error: error.message });
