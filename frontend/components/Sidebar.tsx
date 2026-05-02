@@ -7,20 +7,22 @@ import {
   Animated,
   Dimensions,
   SafeAreaView,
+  Platform,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width } = Dimensions.get('window');
-const SIDEBAR_WIDTH = width * 0.75;
+const SIDEBAR_WIDTH = Math.min(width * 0.8, 310); // Standard drawer width with a max limit
 
 interface SidebarProps {
   isVisible: boolean;
   onClose: () => void;
 }
 
-export const Sidebar = ({ isVisible, onClose }: SidebarProps) => {
+const Sidebar = ({ isVisible, onClose }: SidebarProps) => {
   const [user, setUser] = useState<any>(null);
   const [shouldRender, setShouldRender] = useState(isVisible);
   const router = useRouter();
@@ -93,10 +95,14 @@ export const Sidebar = ({ isVisible, onClose }: SidebarProps) => {
         <SafeAreaView style={styles.safeContent}>
           <View style={styles.sidebarHeader}>
             <View style={styles.avatarCircle}>
-              <Ionicons name="person" size={40} color="#1A3B2F" />
+              {user?.profilePicture ? (
+                <Image source={{ uri: user.profilePicture }} style={styles.sidebarAvatarImage} />
+              ) : (
+                <Ionicons name="person" size={40} color="#1A3B2F" />
+              )}
             </View>
-            <View>
-              <Text style={styles.sidebarName}>{user?.fullName || 'Guest'}</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.sidebarName} numberOfLines={2}>{user?.fullName || 'Guest'}</Text>
               <Text style={styles.sidebarRole}>{(user?.role || 'customer').toUpperCase()}</Text>
             </View>
           </View>
@@ -105,19 +111,33 @@ export const Sidebar = ({ isVisible, onClose }: SidebarProps) => {
 
           <View style={styles.menuList}>
             <SidebarItem
-              icon="house-outline"
+              icon="home-outline"
               label="Home"
               onPress={() => handleNavigate('/(tabs)')}
             />
+            {user?.role !== 'groomer' && (
+              <SidebarItem
+                icon="search-outline"
+                label="Explore"
+                onPress={() => handleNavigate('/(tabs)/explore')}
+              />
+            )}
             <SidebarItem
-              icon="search-outline"
-              label="Explore"
-              onPress={() => handleNavigate('/(tabs)/explore')}
+              icon="calendar-outline"
+              label={user?.role === 'groomer' ? "My Appointments" : "My Bookings"}
+              onPress={() => handleNavigate(user?.role === 'groomer' ? '/(tabs)/appointments' : '/(tabs)/history')}
             />
+            {user?.role === 'groomer' && (
+              <SidebarItem
+                icon="time-outline"
+                label="Appointment History"
+                onPress={() => handleNavigate('/(tabs)/history')}
+              />
+            )}
             <SidebarItem
-              icon="bookmark-outline"
-              label="My Bookings"
-              onPress={() => {}}
+              icon="person-outline"
+              label="My Profile"
+              onPress={() => handleNavigate('/(tabs)/profile')}
             />
             <SidebarItem
               icon="notifications-outline"
@@ -141,7 +161,7 @@ export const Sidebar = ({ isVisible, onClose }: SidebarProps) => {
                 <SidebarItem
                   icon="business-outline"
                   label="Groomer Management"
-                  onPress={() => {}}
+                  onPress={() => handleNavigate('/admin/groomers')}
                 />
               </>
             )}
@@ -155,6 +175,21 @@ export const Sidebar = ({ isVisible, onClose }: SidebarProps) => {
               icon="help-circle-outline"
               label="Help Center"
               onPress={() => {}}
+            />
+            <View style={styles.divider} />
+            <SidebarItem
+              icon="log-out-outline"
+              label="Logout"
+              onPress={async () => {
+                onClose();
+                try {
+                  await AsyncStorage.multiRemove(['auth:user', 'auth:token', 'auth:isSignedIn']);
+                  router.replace('/');
+                } catch (e) {
+                  console.error(e);
+                  router.replace('/');
+                }
+              }}
             />
           </View>
 
@@ -203,7 +238,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 16,
-    paddingTop: 40,
+    paddingTop: Platform.OS === 'ios' ? 20 : 40,
+    marginBottom: 10,
   },
   avatarCircle: {
     width: 64,
@@ -214,11 +250,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: 'rgba(26, 59, 47, 0.1)',
+    overflow: 'hidden',
+  },
+  sidebarAvatarImage: {
+    width: '100%',
+    height: '100%',
   },
   sidebarName: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '900',
     color: '#1A3B2F',
+    letterSpacing: -0.5,
   },
   sidebarRole: {
     fontSize: 11,
@@ -259,7 +301,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(26, 59, 47, 0.05)',
   },
   menuLabel: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '700',
     color: '#1A3B2F',
   },
@@ -274,3 +316,5 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
+
+export default Sidebar;

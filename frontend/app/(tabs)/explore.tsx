@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: '800',
-    color: '#0b3a53',
+    color: '#1A3B2F',
   },
   subtitle: {
     color: '#475569',
@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#d9e3ea',
     paddingHorizontal: 12,
-    minHeight: 50,
+    minHeight: 56,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
@@ -190,8 +190,8 @@ const styles = StyleSheet.create({
     color: '#0f172a',
   },
   badge: {
-    backgroundColor: '#e2f3ff',
-    color: '#075985',
+    backgroundColor: '#FFD166',
+    color: '#1A3B2F',
     fontSize: 11,
     fontWeight: '700',
     paddingHorizontal: 10,
