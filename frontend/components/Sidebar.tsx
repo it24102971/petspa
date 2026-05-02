@@ -9,7 +9,10 @@ import {
   SafeAreaView,
   Platform,
   Image,
+  Alert,
+  ScrollView,
 } from 'react-native';
+
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -69,7 +72,7 @@ const Sidebar = ({ isVisible, onClose }: SidebarProps) => {
         if (finished) setShouldRender(false);
       });
     }
-  }, [isVisible]);
+  }, [isVisible, opacityAnim, slideAnim]);
 
   const handleNavigate = (path: string) => {
     onClose();
@@ -109,7 +112,14 @@ const Sidebar = ({ isVisible, onClose }: SidebarProps) => {
 
           <View style={styles.divider} />
 
-          <View style={styles.menuList}>
+          <ScrollView 
+            style={{ flex: 1 }}
+            contentContainerStyle={styles.menuList} 
+            showsVerticalScrollIndicator={false}
+            bounces={true}
+          >
+
+
             <SidebarItem
               icon="home-outline"
               label="Home"
@@ -120,6 +130,13 @@ const Sidebar = ({ isVisible, onClose }: SidebarProps) => {
                 icon="search-outline"
                 label="Explore"
                 onPress={() => handleNavigate('/(tabs)/explore')}
+              />
+            )}
+            {user?.role !== 'groomer' && (
+              <SidebarItem
+                icon="sparkles-outline"
+                label="Spa Services"
+                onPress={() => handleNavigate('/(tabs)/spa')}
               />
             )}
             <SidebarItem
@@ -139,6 +156,20 @@ const Sidebar = ({ isVisible, onClose }: SidebarProps) => {
               label="My Profile"
               onPress={() => handleNavigate('/(tabs)/profile')}
             />
+            {user?.role !== 'admin' && (
+              <SidebarItem
+                icon="book-outline"
+                label="Spa Diary"
+                onPress={() => handleNavigate('/(tabs)/diary')}
+              />
+            )}
+            {user?.role === 'customer' && (
+              <SidebarItem
+                icon="paw-outline"
+                label="My Pets"
+                onPress={() => handleNavigate('/pets')}
+              />
+            )}
             <SidebarItem
               icon="notifications-outline"
               label="Notifications"
@@ -163,6 +194,21 @@ const Sidebar = ({ isVisible, onClose }: SidebarProps) => {
                   label="Groomer Management"
                   onPress={() => handleNavigate('/admin/groomers')}
                 />
+                <SidebarItem
+                  icon="calendar-outline"
+                  label="Appointment Management"
+                  onPress={() => handleNavigate('/admin/appointments')}
+                />
+                <SidebarItem
+                  icon="sparkles-outline"
+                  label="Service Management"
+                  onPress={() => handleNavigate('/(tabs)/spa')}
+                />
+                <SidebarItem
+                  icon="cafe-outline"
+                  label="Cafe Management"
+                  onPress={() => handleNavigate('/admin/cafe')}
+                />
               </>
             )}
             <View style={styles.divider} />
@@ -176,12 +222,12 @@ const Sidebar = ({ isVisible, onClose }: SidebarProps) => {
               label="Help Center"
               onPress={() => {}}
             />
-            <View style={styles.divider} />
-            <SidebarItem
-              icon="log-out-outline"
-              label="Logout"
+
+
+          <View style={styles.footer}>
+            <Pressable 
+              style={({ pressed }) => [styles.logoutSidebarButton, pressed && { opacity: 0.7 }]}
               onPress={() => {
-                const { Alert } = require('react-native');
                 Alert.alert(
                   "Logout",
                   "Are you sure you want to logout?",
@@ -200,23 +246,23 @@ const Sidebar = ({ isVisible, onClose }: SidebarProps) => {
                             'onboarding:seen'
                           ]);
                           router.dismissAll();
-                          router.replace('/');
+                          router.replace("/");
                         } catch (e) {
                           console.error(e);
-                          router.dismissAll();
-                          router.replace('/');
+                          router.replace("/");
                         }
                       }
                     }
                   ]
                 );
               }}
-            />
-          </View>
-
-          <View style={styles.footer}>
+            >
+              <Ionicons name="log-out-outline" size={20} color="#ffffff" />
+              <Text style={styles.logoutSidebarText}>Logout</Text>
+            </Pressable>
             <Text style={styles.versionText}>Version 1.0.0</Text>
           </View>
+
         </SafeAreaView>
       </Animated.View>
     </View>
@@ -307,9 +353,10 @@ const styles = StyleSheet.create({
     marginVertical: 12,
   },
   menuList: {
-    flex: 1,
     paddingHorizontal: 12,
+    paddingBottom: 20,
   },
+
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -336,6 +383,27 @@ const styles = StyleSheet.create({
     color: 'rgba(26, 59, 47, 0.4)',
     fontWeight: '600',
   },
+  logoutSidebarButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1A3B2F',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    gap: 10,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  logoutSidebarText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '700',
+  },
 });
+
 
 export default Sidebar;

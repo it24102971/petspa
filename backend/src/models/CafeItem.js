@@ -6,7 +6,7 @@ const cafeItemSchema = new mongoose.Schema(
     description: { type: String, required: true },
     price: { type: Number, required: true },
     imageUrl: { type: String },
-    category: { type: String, default: "Drink" },
+
     isAvailable: { type: Boolean, default: true },
   },
   { timestamps: true }

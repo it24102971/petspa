@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, Pressable, RefreshControl, Platform, Image, ActivityIndicator, Alert, Modal, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useRouter, useFocusEffect } from 'expo-router';
+ main
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { useSidebar } from '@/context/SidebarContext';
@@ -21,7 +21,7 @@ const getImageUrl = (url: string | null | undefined) => {
 
 // --- Components ---
 
-const CustomerDashboardContent = ({ user, onLogout, onExplore, onOpenSidebar, onCafe }: any) => (
+
   <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
     <View style={styles.header}>
       <View style={styles.headerLeft}>
@@ -53,10 +53,10 @@ const CustomerDashboardContent = ({ user, onLogout, onExplore, onOpenSidebar, on
         <Text style={styles.statNumber}>12</Text>
         <Text style={styles.statLabel}>Bookings</Text>
       </View>
-      <View style={styles.statCard}>
+      <Pressable style={styles.statCard} onPress={onPets}>
         <Text style={styles.statNumber}>05</Text>
         <Text style={styles.statLabel}>Pets</Text>
-      </View>
+      </Pressable>
       <View style={styles.statCard}>
         <Text style={styles.statNumber}>08</Text>
         <Text style={styles.statLabel}>Reviews</Text>
@@ -97,18 +97,7 @@ const GroomerDashboardContent = ({ user, onLogout, onOpenSidebar, stats, router,
         </Pressable>
         <Text style={styles.dashboardTitle}>Dashboard</Text>
       </View>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-        <Pressable 
-          style={styles.notificationButton} 
-          onPress={() => {
-            setShowNotifications(true);
-            onMarkAsRead();
-          }}
-        >
-          <Ionicons name="notifications-outline" size={24} color="#1A3B2F" />
-          {unreadCount > 0 && <View style={styles.notificationBadge} />}
-        </Pressable>
-      </View>
+
     </View>
 
     {/* Notification Modal */}
@@ -303,29 +292,38 @@ const AdminDashboardContent = ({ user, onLogout, onOpenSidebar, onAddGroomer, on
     {/* Stats Grid */}
     <View style={styles.statsGrid}>
       <View style={styles.statsRow}>
-        <View style={[styles.statBox, { backgroundColor: '#ffffff' }]}>
+        <Pressable
+          style={[styles.statBox, { backgroundColor: '#ffffff' }]}
+          onPress={() => router.push('/admin/users')}
+        >
           <View style={styles.statBoxHeader}>
             <Text style={styles.statBoxNumber}>1.2k</Text>
             <Ionicons name="people" size={20} color="#FFD166" />
           </View>
           <Text style={styles.statBoxLabel}>Total Users</Text>
-        </View>
-        <View style={[styles.statBox, { backgroundColor: '#ffffff' }]}>
+        </Pressable>
+        <Pressable
+          style={[styles.statBox, { backgroundColor: '#ffffff' }]}
+          onPress={() => router.push('/admin/appointments')}
+        >
           <View style={styles.statBoxHeader}>
             <Text style={styles.statBoxNumber}>320</Text>
             <Ionicons name="calendar" size={20} color="#FFD166" />
           </View>
           <Text style={styles.statBoxLabel}>Appointments</Text>
-        </View>
+        </Pressable>
       </View>
       <View style={styles.statsRow}>
-        <View style={[styles.statBox, { backgroundColor: '#ffffff' }]}>
+        <Pressable
+          style={[styles.statBox, { backgroundColor: '#ffffff' }]}
+          onPress={() => router.push('/admin/groomers')}
+        >
           <View style={styles.statBoxHeader}>
             <Text style={styles.statBoxNumber}>25</Text>
             <Ionicons name="cut" size={20} color="#FFD166" />
           </View>
           <Text style={styles.statBoxLabel}>Active Groomers</Text>
-        </View>
+        </Pressable>
         <View style={[styles.statBox, { backgroundColor: '#ffffff' }]}>
           <View style={styles.statBoxHeader}>
             <Text style={styles.statBoxNumber}>4.9</Text>
@@ -336,23 +334,30 @@ const AdminDashboardContent = ({ user, onLogout, onOpenSidebar, onAddGroomer, on
       </View>
     </View>
 
-    {/* Quick Actions */}
-    <View style={styles.sectionHeader}>
-      <Text style={styles.sectionTitleText}>Quick Actions</Text>
+
+
+    {/* Management Section */}
+    <View style={[styles.sectionHeader, { marginTop: 24 }]}>
+      <Text style={styles.sectionTitleText}>Management</Text>
     </View>
-    
-    <View style={styles.statsRow}>
-      <Pressable style={[styles.statBox, { backgroundColor: '#1A3B2F' }]} onPress={onAddGroomer}>
-        <View style={styles.statBoxHeader}>
-          <Ionicons name="person-add" size={22} color="#FFD166" />
+    <View style={styles.managementGrid}>
+      <Pressable style={styles.managementCard} onPress={() => router.push('/(tabs)/spa')}>
+        <View style={[styles.managementIconContainer, { backgroundColor: '#EAF5EF' }]}>
+          <Ionicons name="sparkles" size={24} color="#1A3B2F" />
         </View>
-        <Text style={[styles.statBoxLabel, { color: '#ffffff' }]}>Add Groomer</Text>
+        <Text style={styles.managementLabel}>Services</Text>
       </Pressable>
-      <Pressable style={[styles.statBox, { backgroundColor: '#FFD166' }]} onPress={onManageGroomers}>
-        <View style={styles.statBoxHeader}>
-          <Ionicons name="people" size={22} color="#1A3B2F" />
+      <Pressable style={styles.managementCard} onPress={() => router.push('/admin/cafe')}>
+        <View style={[styles.managementIconContainer, { backgroundColor: '#FDF2F2' }]}>
+          <Ionicons name="cafe" size={24} color="#EF5350" />
         </View>
-        <Text style={[styles.statBoxLabel, { color: '#1A3B2F' }]}>Groomer Mgmt</Text>
+        <Text style={styles.managementLabel}>Cafe</Text>
+      </Pressable>
+      <Pressable style={styles.managementCard} onPress={onAddGroomer}>
+        <View style={[styles.managementIconContainer, { backgroundColor: '#1A3B2F' }]}>
+          <Ionicons name="person-add" size={24} color="#ffffff" />
+        </View>
+        <Text style={styles.managementLabel}>New Groomer</Text>
       </Pressable>
     </View>
 
@@ -459,8 +464,8 @@ export default function DashboardScreen() {
       "Are you sure you want to logout?",
       [
         { text: "Cancel", style: "cancel" },
-        { 
-          text: "Logout", 
+        {
+          text: "Logout",
           style: "destructive",
           onPress: async () => {
             try {
@@ -497,18 +502,18 @@ export default function DashboardScreen() {
       <StatusBar style="dark" />
       <SafeAreaView style={{ flex: 1 }}>
         {user?.role === 'admin' ? (
-          <AdminDashboardContent 
-            user={user} 
-            onLogout={handleLogout} 
+          <AdminDashboardContent
+            user={user}
+            onLogout={handleLogout}
             onOpenSidebar={openSidebar}
             onAddGroomer={() => router.push('/admin/add-groomer')}
             onManageGroomers={() => router.push('/admin/groomers')}
             router={router}
           />
         ) : user?.role === 'groomer' ? (
-          <GroomerDashboardContent 
-            user={user} 
-            onLogout={handleLogout} 
+          <GroomerDashboardContent
+            user={user}
+            onLogout={handleLogout}
             onOpenSidebar={openSidebar}
             stats={groomerStats}
             router={router}
@@ -516,13 +521,7 @@ export default function DashboardScreen() {
             onMarkAsRead={markNotificationsRead}
           />
         ) : (
-          <CustomerDashboardContent 
-            user={user} 
-            onLogout={handleLogout}
-            onExplore={() => router.push('/(tabs)/explore')}
-            onOpenSidebar={openSidebar}
-            onCafe={() => router.push('/cafe' as any)}
-            router={router}
+
           />
         )}
       </SafeAreaView>
@@ -533,7 +532,7 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F0FAF5', 
+    backgroundColor: '#F0FAF5',
   },
   loadingContainer: {
     justifyContent: 'center',
@@ -543,6 +542,38 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingTop: Platform.OS === 'ios' ? 10 : 30,
     paddingBottom: 40,
+  },
+  managementGrid: {
+    flexDirection: 'row',
+    gap: 16,
+    marginTop: 12,
+  },
+  managementCard: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+    borderRadius: 24,
+    padding: 20,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(26, 59, 47, 0.08)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.02,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  managementIconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  managementLabel: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#1A3B2F',
   },
   header: {
     flexDirection: 'row',
@@ -611,11 +642,16 @@ const styles = StyleSheet.create({
   logoutButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
     backgroundColor: '#FFD166',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 999,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 25,
+    shadowColor: '#FFD166',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 3,
   },
   logoutButtonText: {
     color: '#1A3B2F',
@@ -645,16 +681,18 @@ const styles = StyleSheet.create({
   statCard: {
     flex: 1,
     backgroundColor: '#ffffff',
-    padding: 18,
-    borderRadius: 22,
+    padding: 20,
+    borderRadius: 24,
     alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(26, 59, 47, 0.1)',
+    borderColor: 'rgba(26, 59, 47, 0.08)',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
+    shadowOpacity: 0.04,
+    shadowRadius: 12,
     elevation: 2,
+    minHeight: 100,
   },
   statNumber: {
     fontSize: 22,
@@ -712,11 +750,16 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     backgroundColor: '#FFD166',
-    height: 56,
-    borderRadius: 28,
+    height: 60,
+    borderRadius: 30,
     width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: '#FFD166',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 4,
   },
   actionButtonText: {
     color: '#1A3B2F',
@@ -867,9 +910,11 @@ const styles = StyleSheet.create({
   statBox: {
     flex: 1,
     borderRadius: 20,
-    padding: 16,
+    padding: 18,
     borderWidth: 1,
     borderColor: 'rgba(26, 59, 47, 0.05)',
+    minHeight: 100,
+    justifyContent: 'center',
   },
   statBoxHeader: {
     flexDirection: 'row',

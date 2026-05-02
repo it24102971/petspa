@@ -146,22 +146,7 @@ export const loginUser = async (req, res) => {
 export const updateUserProfile = async (req, res) => {
   try {
     const userId = req.user._id;
-    const { fullName, phoneNumber, experience, specialization, aboutMe } = req.body;
-    
-    let updateData = {
-      fullName: fullName?.trim(),
-      phoneNumber: phoneNumber?.trim(),
-      experience,
-      specialization,
-      aboutMe,
-    };
 
-    if (req.file) {
-      updateData.profilePicture = `/uploads/pets/${req.file.filename}`; // Reusing pets folder for simplicity
-    }
-
-    if (!updateData.fullName || !updateData.phoneNumber) {
-      return res.status(400).json({ message: "Full name and phone number are required." });
     }
 
     const updatedUser = await User.findByIdAndUpdate(
@@ -175,18 +160,16 @@ export const updateUserProfile = async (req, res) => {
     }
 
     return res.status(200).json({
-      message: "Profile updated successfully.",
-      user: {
-        id: updatedUser._id,
-        fullName: updatedUser.fullName,
-        email: updatedUser.email,
-        phoneNumber: updatedUser.phoneNumber,
-        role: updatedUser.role,
-        profilePicture: updatedUser.profilePicture,
-        experience: updatedUser.experience,
-        specialization: updatedUser.specialization,
-        aboutMe: updatedUser.aboutMe,
-      },
+      id: updatedUser._id,
+      fullName: updatedUser.fullName,
+      email: updatedUser.email,
+      phoneNumber: updatedUser.phoneNumber,
+      address: updatedUser.address,
+      role: updatedUser.role,
+      profilePicture: updatedUser.profilePicture,
+      experience: updatedUser.experience,
+      specialization: updatedUser.specialization,
+      aboutMe: updatedUser.aboutMe,
     });
   } catch (error) {
     return res.status(500).json({ message: "Failed to update profile.", error: error.message });

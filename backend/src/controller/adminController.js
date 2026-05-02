@@ -101,6 +101,7 @@ export const getAllPets = async (req, res) => {
 
     if (search) {
       const searchRegex = new RegExp(search, "i");
+
       filter.$or = [
         { name: searchRegex },
         { breed: searchRegex }

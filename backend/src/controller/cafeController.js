@@ -1,14 +1,14 @@
 import CafeItem from "../models/CafeItem.js";
 import CafeOrder from "../models/CafeOrder.js";
 
-export const getCafeItems = async (_req, res) => {
-  try {
+
     const items = await CafeItem.find({ isAvailable: true }).sort({ createdAt: -1 });
     res.status(200).json(items);
   } catch (error) {
     res.status(500).json({ message: "Error fetching cafe items", error: error.message });
   }
 };
+
 
 export const placeOrder = async (req, res) => {
   try {

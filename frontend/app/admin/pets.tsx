@@ -181,7 +181,10 @@ export default function AdminPetManagementScreen() {
       <View style={styles.petHeader}>
         <View style={styles.petImageContainer}>
           {item.imageUrl ? (
-            <Image source={{ uri: `${API_BASE_URL}${item.imageUrl}` }} style={styles.petImage} />
+            <Image 
+              source={{ uri: item.imageUrl.startsWith('http') ? item.imageUrl : `${API_BASE_URL.replace('/api', '')}${item.imageUrl}` }} 
+              style={styles.petImage} 
+            />
           ) : (
             <Ionicons name="paw" size={30} color="rgba(26, 59, 47, 0.2)" />
           )}

@@ -105,7 +105,10 @@ export default function GroomerManagementScreen() {
       <View style={styles.cardHeader}>
         <View style={styles.avatar}>
           {item.profilePicture ? (
-            <Image source={{ uri: item.profilePicture }} style={styles.avatarImage} />
+            <Image 
+              source={{ uri: item.profilePicture.startsWith('http') ? item.profilePicture : `${API_BASE_URL.replace('/api', '')}${item.profilePicture}` }} 
+              style={styles.avatarImage} 
+            />
           ) : (
             <Ionicons name="person" size={24} color="#1A3B2F" />
           )}
@@ -121,11 +124,11 @@ export default function GroomerManagementScreen() {
         </View>
         
         <Pressable 
-          disabled={togglingId === item.id}
-          onPress={() => handleToggleStatus(item.id, item.isActive, item.fullName)}
+          disabled={togglingId === item._id}
+          onPress={() => handleToggleStatus(item._id, item.isActive, item.fullName)}
           style={[styles.toggleBtn, item.isActive ? styles.btnDeactivate : styles.btnActivate]}
         >
-          {togglingId === item.id ? (
+          {togglingId === item._id ? (
             <ActivityIndicator size="small" color="#ffffff" />
           ) : (
             <Ionicons 
@@ -180,7 +183,7 @@ export default function GroomerManagementScreen() {
         ) : (
           <FlatList
             data={groomers}
-            keyExtractor={(item) => item.id}
+            keyExtractor={(item) => item._id}
             renderItem={renderItem}
             contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}
@@ -212,7 +215,10 @@ export default function GroomerManagementScreen() {
                 <View style={styles.modalBody}>
                   <View style={styles.largeAvatar}>
                     {selectedGroomer?.profilePicture ? (
-                      <Image source={{ uri: selectedGroomer.profilePicture }} style={styles.largeAvatarImage} />
+                      <Image 
+                        source={{ uri: selectedGroomer.profilePicture.startsWith('http') ? selectedGroomer.profilePicture : `${API_BASE_URL.replace('/api', '')}${selectedGroomer.profilePicture}` }} 
+                        style={styles.largeAvatarImage} 
+                      />
                     ) : (
                       <Ionicons name="person" size={60} color="#1A3B2F" />
                     )}

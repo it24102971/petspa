@@ -178,7 +178,7 @@ export default function PetsSection() {
       ) : pets.length === 0 ? (
         <View style={styles.emptyState}>
           <Ionicons name="paw-outline" size={40} color="rgba(26, 59, 47, 0.2)" />
-          <Text style={styles.emptyText}>You haven't added any pets yet.</Text>
+          <Text style={styles.emptyText}>You haven&apos;t added any pets yet.</Text>
         </View>
       ) : (
         <View style={styles.list}>
