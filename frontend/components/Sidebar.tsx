@@ -122,6 +122,13 @@ const Sidebar = ({ isVisible, onClose }: SidebarProps) => {
                 onPress={() => handleNavigate('/(tabs)/explore')}
               />
             )}
+            {user?.role !== 'groomer' && (
+              <SidebarItem
+                icon="sparkles-outline"
+                label="Spa Services"
+                onPress={() => handleNavigate('/(tabs)/spa')}
+              />
+            )}
             <SidebarItem
               icon="calendar-outline"
               label={user?.role === 'groomer' ? "My Appointments" : "My Bookings"}
