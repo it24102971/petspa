@@ -12,20 +12,21 @@ const generateToken = (id) => {
 // @access  Public
 exports.registerUser = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, phone, password } = req.body;
 
     const userExists = await User.findOne({ email });
     if (userExists) {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    const user = await User.create({ name, email, password });
+    const user = await User.create({ name, email, phone, password });
 
     if (user) {
       res.status(201).json({
         _id: user._id,
         name: user.name,
         email: user.email,
+        phone: user.phone,
         role: user.role,
         token: generateToken(user._id),
       });

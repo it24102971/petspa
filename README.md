@@ -1,93 +1,43 @@
-# 🐾 Paws & Palms Pet Spa - Mobile App
+# 🐾 Paws & Pastries: The Kawaii Pet Spa 🎀
 
-
-A premium full-stack mobile application built using the MERN stack with Expo (React Native). This platform allows pet owners to book grooming sessions, spa treatments, and pet care services with ease.
-
-## 🏗️ Project Architecture
-
-The project is organized into two main directories for a clean separation of concerns:
-
-```text
-Paws-and-Palms-Pet-Spa/
-├── backend/            # Node.js + Express + MongoDB Server
-│   ├── src/            # Backend source code
-│   └── server.js       # Entry point
-│
-└── frontend/           # Expo (React Native) Mobile Application
-    ├── app/            # Screens (Expo Router)
-    ├── components/     # Reusable UI components
-    ├── constants/      # Design system (Colors, Spacing)
-    └── styles/         # Global & Screen styles
-```
-
----
-
-## 🛠️ Technologies Used
-
-### Frontend
-- **Framework**: Expo (React Native)
-- **Navigation**: Expo Router (File-based routing)
-- **Styling**: Native CSS-in-JS (StyleSheet)
-- **Theme**: Premium Dark mode with "Paws & Palms" branding
-
-### Backend
-- **Runtime**: Node.js
-- **Framework**: Express.js
-- **Database**: MongoDB (Mongoose)
-- **Auth**: JSON Web Tokens (JWT) & Bcrypt
-
----
+A premium MERN stack (React, Node.js, MongoDB) application designed for a 6-member team. Every module is built with a high-aesthetic "Kawaii" design system.
 
 ## 🚀 Getting Started
 
-### 1️⃣ Prerequisites
-- **Node.js**: Version 18 or 20 recommended.
-- **Expo Go App**: Download on your [iOS](https://apps.apple.com/app/expo-go/id982107779) or [Android](https://play.google.com/store/apps/details?id=host.exp.exponent) device.
+### 1. Prerequisites
+- Node.js installed
+- MongoDB installed and running locally on `mongodb://localhost:27017/paws-pastries`
 
-### 2️⃣ Backend Setup
-1. Navigate to the backend folder:
-   ```bash
-   cd backend
-   ```
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Configure your `.env` file with your MongoDB connection string (See `PRIVATE_LOCAL_FILES` for your local backup).
-4. Start the server:
-   ```bash
-   npm run dev
-   ```
+### 2. Running the Backend
+```bash
+cd backend
+npm install
+node index.js
+```
+*Server will run on http://localhost:5000*
 
-### 3️⃣ Frontend Setup
-1. Navigate to the frontend folder:
-   ```bash
-   cd frontend
-   ```
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Start the Expo development server:
-   ```bash
-   npx expo start
-   ```
-4. Scan the QR code with your phone using the **Expo Go** app.
+### 3. Running the Frontend
+```bash
+npm install
+npm run dev
+```
+*Frontend will run on http://localhost:5173*
 
----
+## 🎀 Module Breakdown (6 Members)
 
-## 🎯 Project Roadmap
+| Student | Entity | Focus Area |
+| :--- | :--- | :--- |
+| **Student 1** | Pet Profile | Pet Registry: Add/Edit/Delete pet profiles (Name, Breed, "Cuteness Level"). |
+| **Student 2** | Spa Service | Service Menu: Manage spa treatments (e.g., "Strawberry Bubble Bath"). |
+| **Student 3** | Appointment | Booking System: Scheduling pet spa sessions. |
+| **Student 4** | Cafe Order | Treat Shop: CRUD for ordering "Puppy Lattes" while waiting. |
+| **Student 5** | Memory Book | Diary Entries: Users post cute photos and "Diary Entries". |
+| **Student 6** | Groomer | Staff Management: Profiles and Deployment/Image Upload. |
 
-- [x] Project Structure Setup
-- [x] Welcome & Authentication UI (Paws & Palms Branding)
-- [x] Basic Backend API setup
-- [x] User Registration & Login
-- [ ] Pet Profile Management
-- [ ] Appointment Booking System
-- [ ] Service Catalog & Pricing
+## ✨ Design Philosophy
+- **Vibrant Pastel Colors**: Pink, Mint, Sky Blue, and Pastel Yellow.
+- **Micro-animations**: Smooth hover effects and floating icons.
+- **Premium UI**: Custom cards, pill-shaped buttons, and rich typography.
+- **SEO Ready**: Semantic HTML and descriptive titles.
 
----
-
-## ⚠️ Important Notes
-- **Environment**: Never share your `.env` file or commit it to version control.
-- **Localhost**: When connecting the frontend to the backend, use your computer's **Local IP Address** (e.g., `192.168.x.x`) instead of `localhost` in your API configuration
+Enjoy building the most adorable spa in the world! 🐶🧁✨
