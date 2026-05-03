@@ -14,14 +14,16 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <SidebarProvider>
         <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-          <Stack>
-            <Stack.Screen name="index" options={{ headerShown: false }} />
-            <Stack.Screen name="login" options={{ headerShown: false }} />
-            <Stack.Screen name="register" options={{ headerShown: false }} />
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="admin" options={{ headerShown: false }} />
-            <Stack.Screen name="pets" options={{ headerShown: false }} />
-            <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="index" />
+            <Stack.Screen name="login" />
+            <Stack.Screen name="register" />
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="admin" />
+            <Stack.Screen name="groomer" />
+            <Stack.Screen name="pets" />
+            <Stack.Screen name="notifications" />
+            <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal', headerShown: true }} />
           </Stack>
           <StatusBar style="auto" />
         </ThemeProvider>

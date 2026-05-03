@@ -23,7 +23,7 @@ const getImageUrl = (url: string | null | undefined) => {
 
 // --- Components ---
 
-const CustomerDashboardContent = ({ user, stats, router, appointments, onOpenSidebar, onPets, onCafe, availableGroomers }: any) => (
+const CustomerDashboardContent = ({ user, stats, router, appointments, onOpenSidebar, onPets, onCafe, availableGroomers, notifications }: any) => (
   <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
     <View style={styles.header}>
       <View style={styles.headerLeft}>
@@ -44,6 +44,14 @@ const CustomerDashboardContent = ({ user, stats, router, appointments, onOpenSid
           </View>
         </View>
       </View>
+      <Pressable onPress={() => router.push('/notifications')} style={styles.notifButton}>
+        <Ionicons name="notifications-outline" size={24} color="#1A3B2F" />
+        {notifications && notifications.filter((n: any) => !n.isRead).length > 0 && (
+          <View style={styles.notifBadge}>
+            <Text style={styles.notifBadgeText}>{notifications.filter((n: any) => !n.isRead).length}</Text>
+          </View>
+        )}
+      </Pressable>
     </View>
 
     <View style={styles.roleBadge}>
@@ -146,6 +154,14 @@ const GroomerDashboardContent = ({ user, stats, router, notifications, onMarkAsR
           </Pressable>
           <Text style={styles.dashboardTitle}>Dashboard</Text>
         </View>
+        <Pressable onPress={() => router.push('/notifications')} style={styles.notifButton}>
+          <Ionicons name="notifications-outline" size={24} color="#1A3B2F" />
+          {notifications && notifications.filter((n: any) => !n.isRead).length > 0 && (
+            <View style={styles.notifBadge}>
+              <Text style={styles.notifBadgeText}>{notifications.filter((n: any) => !n.isRead).length}</Text>
+            </View>
+          )}
+        </Pressable>
       </View>
 
       {/* Welcome Card */}
@@ -262,7 +278,7 @@ const GroomerDashboardContent = ({ user, stats, router, notifications, onMarkAsR
   );
 };
 
-const AdminDashboardContent = ({ user, onOpenSidebar, onAddGroomer, router, stats }: any) => (
+const AdminDashboardContent = ({ user, onOpenSidebar, onAddGroomer, router, stats, notifications }: any) => (
   <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
     {/* Header */}
     <View style={styles.header}>
@@ -272,6 +288,14 @@ const AdminDashboardContent = ({ user, onOpenSidebar, onAddGroomer, router, stat
         </Pressable>
         <Text style={styles.dashboardTitle}>Admin Panel</Text>
       </View>
+      <Pressable onPress={() => router.push('/notifications')} style={styles.notifButton}>
+        <Ionicons name="notifications-outline" size={24} color="#1A3B2F" />
+        {notifications && notifications.filter((n: any) => !n.isRead).length > 0 && (
+          <View style={styles.notifBadge}>
+            <Text style={styles.notifBadgeText}>{notifications.filter((n: any) => !n.isRead).length}</Text>
+          </View>
+        )}
+      </Pressable>
     </View>
 
     {/* Welcome Card */}
@@ -475,10 +499,11 @@ export default function DashboardScreen() {
                 setDiaryEntries(await diaryRes.json());
               }
             } else if (parsedUser.role === 'customer' && token) {
-              const [statsRes, bookingsRes, groomersRes] = await Promise.all([
+              const [statsRes, bookingsRes, groomersRes, notifRes] = await Promise.all([
                 fetch(`${API_BASE_URL}/auth/dashboard-stats`, { headers: { 'Authorization': `Bearer ${token}` } }),
                 fetch(`${API_BASE_URL}/spa-services/bookings`, { headers: { 'Authorization': `Bearer ${token}` } }),
-                fetch(`${API_BASE_URL}/spa-services/groomers`, { headers: { 'Authorization': `Bearer ${token}` } })
+                fetch(`${API_BASE_URL}/spa-services/groomers`, { headers: { 'Authorization': `Bearer ${token}` } }),
+                fetch(`${API_BASE_URL}/notifications`, { headers: { 'Authorization': `Bearer ${token}` } })
               ]);
               if (statsRes.ok) {
                 const statsData = await statsRes.json();
@@ -492,13 +517,22 @@ export default function DashboardScreen() {
                 const groomersData = await groomersRes.json();
                 setAvailableGroomers(groomersData);
               }
+              if (notifRes.ok) {
+                const notifData = await notifRes.json();
+                setNotifications(notifData);
+              }
             } else if (parsedUser.role === 'admin' && token) {
-              const statsRes = await fetch(`${API_BASE_URL}/admin/dashboard-stats`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-              });
+              const [statsRes, notifRes] = await Promise.all([
+                fetch(`${API_BASE_URL}/admin/dashboard-stats`, { headers: { 'Authorization': `Bearer ${token}` } }),
+                fetch(`${API_BASE_URL}/notifications`, { headers: { 'Authorization': `Bearer ${token}` } })
+              ]);
               if (statsRes.ok) {
                 const statsData = await statsRes.json();
                 setAdminStats(statsData);
+              }
+              if (notifRes.ok) {
+                const notifData = await notifRes.json();
+                setNotifications(notifData);
               }
             }
           }
@@ -564,6 +598,7 @@ export default function DashboardScreen() {
             onManageGroomers={() => router.push('/admin/groomers')}
             router={router}
             stats={adminStats}
+            notifications={notifications}
           />
         ) : user?.role === 'groomer' ? (
           <GroomerDashboardContent
@@ -625,6 +660,7 @@ export default function DashboardScreen() {
             appointments={customerAppointments}
             router={router}
             availableGroomers={availableGroomers}
+            notifications={notifications}
           />
         )}
       </SafeAreaView>
@@ -704,6 +740,36 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: 'rgba(26, 59, 47, 0.05)',
+    position: 'relative',
+  },
+  notifButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 16,
+    backgroundColor: '#ffffff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(26, 59, 47, 0.05)',
+    position: 'relative',
+  },
+  notifBadge: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    backgroundColor: '#FF5252',
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#ffffff',
+  },
+  notifBadgeText: {
+    color: '#ffffff',
+    fontSize: 9,
+    fontWeight: '900',
   },
   headerUserContainer: {
     flexDirection: 'row',

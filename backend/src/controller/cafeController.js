@@ -1,5 +1,7 @@
 import CafeItem from "../models/CafeItem.js";
 import CafeOrder from "../models/CafeOrder.js";
+import User from "../models/User.js";
+import { createNotification } from "./notificationController.js";
 
 
 export const getCafeItems = async (req, res) => {
@@ -28,6 +30,18 @@ export const placeOrder = async (req, res) => {
       totalPrice: Number(totalPrice),
       paymentSlip,
     });
+
+    // Notify Admin
+    const admin = await User.findOne({ role: "admin" });
+    if (admin) {
+      await createNotification(
+        admin._id,
+        "New Cafe Order",
+        `${req.user.fullName} placed an order for Rs. ${totalPrice}.`,
+        "system",
+        "/admin/cafe"
+      );
+    }
 
     res.status(201).json(order);
   } catch (error) {

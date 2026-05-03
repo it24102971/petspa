@@ -10,6 +10,11 @@ const { height } = Dimensions.get('window');
 
 const AUTH_TOKEN_KEY = "auth:token";
 
+const isEmoji = (text: string | null | undefined) => {
+  if (!text) return false;
+  return text.length <= 4 && !text.includes('/') && !text.includes('.');
+};
+
 interface CafeItem {
   _id: string;
   name: string;
@@ -278,11 +283,15 @@ export default function AdminCafeScreen() {
             data={view === 'orders' ? (orders as any[]) : (items as any[])}
             renderItem={view === 'orders' ? renderOrderItem : ({ item }: any) => (
               <Pressable style={styles.itemCard} onPress={() => openEditModal(item)}>
-                {item.imageUrl && (item.imageUrl.startsWith('http') || item.imageUrl.startsWith('/uploads')) ? (
+                {isEmoji(item.imageUrl) ? (
+                  <View style={[styles.itemImage, { backgroundColor: '#F0FAF5', justifyContent: 'center', alignItems: 'center' }]}>
+                    <Text style={{ fontSize: 24 }}>{item.imageUrl}</Text>
+                  </View>
+                ) : item.imageUrl && (item.imageUrl.startsWith('http') || item.imageUrl.startsWith('/uploads')) ? (
                   <Image source={{ uri: item.imageUrl.startsWith('http') ? item.imageUrl : `${API_BASE_URL.replace('/api', '')}${item.imageUrl}` }} style={styles.itemImage} />
                 ) : (
                   <View style={[styles.itemImage, { backgroundColor: '#F0FAF5', justifyContent: 'center', alignItems: 'center' }]}>
-                    <Text style={{ fontSize: 24 }}>{item.imageUrl || '🐾'}</Text>
+                    <Text style={{ fontSize: 24 }}>🐾</Text>
                   </View>
                 )}
                 <View style={styles.itemInfo}>

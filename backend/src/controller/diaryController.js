@@ -1,4 +1,6 @@
 import DiaryEntry from "../models/DiaryEntry.js";
+import User from "../models/User.js";
+import { createNotification } from "./notificationController.js";
 
 // Create a new diary entry
 export const createDiaryEntry = async (req, res) => {
@@ -13,6 +15,18 @@ export const createDiaryEntry = async (req, res) => {
       user: req.user._id,
       photoUrl,
     });
+
+    // Notify Admin
+    const admin = await User.findOne({ role: "admin" });
+    if (admin) {
+      await createNotification(
+        admin._id,
+        "New Diary Post",
+        `${req.user.fullName} shared a new post: "${req.body.title || 'Untitled'}"`,
+        "system",
+        "/admin/reviews"
+      );
+    }
 
     res.status(201).json(entry);
   } catch (error) {

@@ -1,6 +1,7 @@
 import SpaService from "../models/SpaService.js";
 import SpaBooking from "../models/SpaBooking.js";
 import User from "../models/User.js";
+import { createNotification } from "./notificationController.js";
 import Pet from "../models/Pet.js";
 
 // Get all services
@@ -106,8 +107,21 @@ export const bookSpaService = async (req, res) => {
       paymentSlip,
     });
 
+    // Notify Admin
+    const admin = await User.findOne({ role: "admin" });
+    if (admin) {
+      await createNotification(
+        admin._id,
+        "New Appointment",
+        `${req.user.fullName} booked ${serviceName || 'a service'} for ${petName || 'their pet'} on ${appointmentDate}.`,
+        "booking",
+        "/admin/appointments"
+      );
+    }
+
     res.status(201).json(booking);
   } catch (error) {
+    console.error("Booking Error:", error);
     res.status(500).json({ message: "Error booking service", error: error.message });
   }
 };

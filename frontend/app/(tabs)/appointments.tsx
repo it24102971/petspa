@@ -54,7 +54,7 @@ export default function AppointmentsScreen() {
   const [activeFilter, setActiveFilter] = useState('All');
   const [appointments, setAppointments] = useState<Booking[]>([]);
   const { openSidebar } = useSidebar();
-  const filters = ['All', 'Pending', 'Confirmed', 'Accepted', 'Completed'];
+  const filters = ['All', 'Pending', 'Accepted', 'Completed'];
 
   useEffect(() => {
     if (filter && filters.includes(filter)) {
@@ -136,8 +136,13 @@ export default function AppointmentsScreen() {
 
   const getImageUrl = (url: string) => {
     if (!url) return '';
-    if (url.startsWith('http')) return url;
-    return `${API_BASE_URL.replace('/api', '')}${url}`;
+    if (url.startsWith('http') || url.startsWith('/uploads')) return url.startsWith('http') ? url : `${API_BASE_URL.replace('/api', '')}${url}`;
+    return '';
+  };
+
+  const isEmoji = (text: string | null | undefined) => {
+    if (!text) return false;
+    return text.length <= 4 && !text.includes('/') && !text.includes('.');
   };
 
   const GROOMER_FEE = 1500;
@@ -224,9 +229,15 @@ export default function AppointmentsScreen() {
     <View style={styles.appointmentCard}>
       <View style={styles.cardMain}>
         <View style={styles.petImageContainer}>
-          <View style={styles.petImagePlaceholder}>
-            <Ionicons name="paw" size={32} color="rgba(26, 59, 47, 0.2)" />
-          </View>
+          {isEmoji(item.petId?.imageUrl) ? (
+            <Text style={{ fontSize: 32 }}>{item.petId.imageUrl}</Text>
+          ) : item.petId?.imageUrl ? (
+            <Image source={{ uri: getImageUrl(item.petId.imageUrl) }} style={styles.petImage} />
+          ) : (
+            <View style={styles.petImagePlaceholder}>
+              <Ionicons name="paw" size={32} color="rgba(26, 59, 47, 0.2)" />
+            </View>
+          )}
         </View>
         
         <View style={styles.appointmentDetails}>
@@ -234,7 +245,7 @@ export default function AppointmentsScreen() {
             <Text style={{ fontSize: 12, fontWeight: '800', color: '#FFD166', marginBottom: 2 }}>{item.userId.fullName}</Text>
           )}
           <Text style={styles.petName}>
-            {item.petName || item.serviceName || item.groomerName || 'Spa Service'}
+            {item.petId?.name || item.petName || 'Spa Service'}
           </Text>
           <Text style={styles.petBreed}>
             {item.serviceName ? item.serviceName : (item.groomerName ? 'Grooming' : 'Spa Treatment')}
@@ -252,8 +263,22 @@ export default function AppointmentsScreen() {
           </View>
         </View>
 
-        <View style={[styles.completedBadge, { backgroundColor: item.status === 'Pending' ? '#FFF3E0' : '#E0F2F1' }]}>
-          <Text style={[styles.completedText, { color: item.status === 'Pending' ? '#E65100' : '#00897B' }]}>{item.status}</Text>
+        <View style={[
+          styles.completedBadge, 
+          { backgroundColor: 
+            item.status === 'Pending' ? '#FFF3E0' : 
+            item.status === 'Accepted' ? '#E3F2FD' :
+            item.status === 'Completed' ? '#E8F5E9' : '#F5F5F7' 
+          }
+        ]}>
+          <Text style={[
+            styles.completedText, 
+            { color: 
+              item.status === 'Pending' ? '#E65100' : 
+              item.status === 'Accepted' ? '#1976D2' :
+              item.status === 'Completed' ? '#2E7D32' : '#666666' 
+            }
+          ]}>{item.status}</Text>
         </View>
       </View>
     </View>
@@ -567,6 +592,12 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     overflow: 'hidden',
     backgroundColor: '#F0FAF5',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  petImage: {
+    width: '100%',
+    height: '100%',
   },
   petImagePlaceholder: {
     flex: 1,

@@ -14,7 +14,6 @@ import * as ImagePicker from 'expo-image-picker';
 const { width } = Dimensions.get('window');
 const AUTH_TOKEN_KEY = 'auth:token';
 
-// Map item name keywords → emoji for icon
 const getItemEmoji = (name: string, category: string): string => {
   const n = name.toLowerCase();
   if (n.includes('tuna') || n.includes('cat')) return '🐱';
@@ -89,8 +88,13 @@ export default function CafeScreen() {
 
   const getImageUrl = (url: string) => {
     if (!url) return '';
-    if (url.startsWith('http')) return url;
-    return `${API_BASE_URL.replace('/api', '')}${url}`;
+    if (url.startsWith('http') || url.startsWith('/uploads')) return url.startsWith('http') ? url : `${API_BASE_URL.replace('/api', '')}${url}`;
+    return '';
+  };
+
+  const isEmoji = (text: string | null | undefined) => {
+    if (!text) return false;
+    return text.length <= 4 && !text.includes('/') && !text.includes('.');
   };
 
   const addToCart = (item: CafeItem) => {
@@ -148,7 +152,7 @@ export default function CafeScreen() {
   const inCartItem = (id: string) => cart.find(c => c._id === id);
 
   const renderItem = ({ item }: { item: CafeItem }) => {
-    const emoji = getItemEmoji(item.name, item.category);
+    const emoji = isEmoji(item.imageUrl) ? item.imageUrl : getItemEmoji(item.name, item.category);
     const inCart = inCartItem(item._id);
     return (
       <TouchableOpacity style={styles.gridCard} onPress={() => setDetailItem(item)} activeOpacity={0.7}>
@@ -245,7 +249,9 @@ export default function CafeScreen() {
                 return (
                   <>
                     <View style={styles.detailIconBox}>
-                      {detailItem.imageUrl ? (
+                      {isEmoji(detailItem.imageUrl) ? (
+                        <Text style={{ fontSize: 72 }}>{detailItem.imageUrl}</Text>
+                      ) : detailItem.imageUrl ? (
                         <Image source={{ uri: getImageUrl(detailItem.imageUrl) }} style={styles.detailImage} resizeMode="cover" />
                       ) : (
                         <Text style={{ fontSize: 72 }}>{emoji}</Text>
@@ -300,7 +306,9 @@ export default function CafeScreen() {
               {cart.map(item => (
                 <View key={item._id} style={styles.cartRow}>
                   <View style={styles.cartIconBox}>
-                    {item.imageUrl ? (
+                    {isEmoji(item.imageUrl) ? (
+                      <Text style={{ fontSize: 32 }}>{item.imageUrl}</Text>
+                    ) : item.imageUrl ? (
                       <Image source={{ uri: getImageUrl(item.imageUrl) }} style={styles.cartIconBoxImage} resizeMode="cover" />
                     ) : (
                       <Text style={{ fontSize: 32 }}>{getItemEmoji(item.name, item.category)}</Text>

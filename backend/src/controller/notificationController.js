@@ -31,3 +31,20 @@ export const deleteNotification = async (req, res) => {
     res.status(500).json({ message: "Error deleting notification", error: error.message });
   }
 };
+
+// Internal utility to create notifications
+export const createNotification = async (recipientId, title, message, type = "system", link = "") => {
+  try {
+    const notification = new Notification({
+      recipient: recipientId,
+      title,
+      message,
+      type,
+      link,
+    });
+    await notification.save();
+    return notification;
+  } catch (error) {
+    console.error("Failed to create notification:", error);
+  }
+};

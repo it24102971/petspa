@@ -20,7 +20,12 @@ import { API_BASE_URL } from '@/constants/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const AUTH_TOKEN_KEY = 'auth:token';
-const petTypes = ['all', 'Dog', 'Cat', 'Bird', 'Rabbit', 'Hamster', 'Fish', 'Turtle', 'Guinea Pig', 'Other'];
+const petTypes = ['all', 'dog', 'cat', 'bird', 'rabbit', 'hamster', 'fish', 'turtle', 'guinea pig', 'other'];
+
+const isEmoji = (text: string | null | undefined) => {
+  if (!text) return false;
+  return text.length <= 4 && !text.includes('/') && !text.includes('.');
+};
 
 export default function AdminPetManagementScreen() {
   const [pets, setPets] = useState<any[]>([]);
@@ -34,7 +39,7 @@ export default function AdminPetManagementScreen() {
   const [isSaving, setIsSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [name, setName] = useState('');
-  const [type, setType] = useState('Dog');
+  const [type, setType] = useState('dog');
   const [breed, setBreed] = useState('');
   const [age, setAge] = useState('');
   const [cuteness, setCuteness] = useState('10');
@@ -99,7 +104,7 @@ export default function AdminPetManagementScreen() {
   const handleOpenEdit = (pet: any) => {
     setEditingId(pet._id);
     setName(pet.name);
-    setType(pet.type || 'Dog');
+    setType(pet.type || 'dog');
     setBreed(pet.breed);
     setAge(pet.age.toString());
     setCuteness(pet.cutenessLevel.toString());
@@ -180,7 +185,9 @@ export default function AdminPetManagementScreen() {
     <View style={styles.petCard}>
       <View style={styles.petHeader}>
         <View style={styles.petImageContainer}>
-          {item.imageUrl ? (
+          {isEmoji(item.imageUrl) ? (
+            <Text style={{ fontSize: 24 }}>{item.imageUrl}</Text>
+          ) : item.imageUrl ? (
             <Image 
               source={{ uri: item.imageUrl.startsWith('http') ? item.imageUrl : `${API_BASE_URL.replace('/api', '')}${item.imageUrl}` }} 
               style={styles.petImage} 

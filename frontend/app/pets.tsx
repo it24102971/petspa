@@ -14,9 +14,14 @@ const AUTH_TOKEN_KEY = "auth:token";
 
 const getImageUrl = (url: string | null | undefined) => {
   if (!url) return null;
-  if (url.startsWith('http')) return url;
-  const baseUrl = API_BASE_URL.replace('/api', '');
-  return `${baseUrl}${url}`;
+  if (url.startsWith('http') || url.startsWith('/uploads')) return url.startsWith('http') ? url : `${API_BASE_URL.replace('/api', '')}${url}`;
+  return null;
+};
+
+const isEmoji = (text: string | null | undefined) => {
+  if (!text) return false;
+  // Simple check: if it's short and doesn't look like a path
+  return text.length <= 4 && !text.includes('/') && !text.includes('.');
 };
 
 export default function PetProfileScreen() {
@@ -72,8 +77,8 @@ export default function PetProfileScreen() {
   };
 
   const handleSave = async () => {
-    if (!name.trim() || !type.trim()) {
-      Alert.alert("Error", "Name and Type are required.");
+    if (!name.trim() || !type.trim() || !breed.trim() || !age.trim()) {
+      Alert.alert("Error", "All fields marked with * are required.");
       return;
     }
 
@@ -198,10 +203,16 @@ export default function PetProfileScreen() {
             ) : (
               pets.map((pet) => (
                 <View key={pet._id} style={styles.petCard}>
-                  <Image
-                    source={pet.imageUrl ? { uri: getImageUrl(pet.imageUrl) } : require('@/assets/images/icon.png')}
-                    style={styles.petImage}
-                  />
+                <View style={styles.petImageContainer}>
+                  {isEmoji(pet.imageUrl) ? (
+                    <Text style={styles.petEmoji}>{pet.imageUrl}</Text>
+                  ) : (
+                    <Image
+                      source={pet.imageUrl ? { uri: getImageUrl(pet.imageUrl) } : require('@/assets/images/icon.png')}
+                      style={styles.petImage}
+                    />
+                  )}
+                </View>
                   <View style={styles.petInfo}>
                     <Text style={styles.petName}>{pet.name}</Text>
                     <Text style={styles.petSub}>{pet.breed || pet.type} • {pet.age} years</Text>
@@ -263,11 +274,11 @@ export default function PetProfileScreen() {
 
                 <View style={styles.inputRow}>
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.label}>Breed</Text>
+                    <Text style={styles.label}>Breed *</Text>
                     <TextInput style={styles.input} value={breed} onChangeText={setBreed} placeholder="Golden Retriever" />
                   </View>
                   <View style={{ width: 80, marginLeft: 12 }}>
-                    <Text style={styles.label}>Age</Text>
+                    <Text style={styles.label}>Age *</Text>
                     <TextInput style={styles.input} value={age} onChangeText={setAge} placeholder="2" keyboardType="numeric" />
                   </View>
                 </View>
@@ -321,7 +332,9 @@ const styles = StyleSheet.create({
   addButton: { width: 44, height: 44, borderRadius: 12, backgroundColor: '#FFD166', alignItems: 'center', justifyContent: 'center' },
   petList: { padding: 24, gap: 16 },
   petCard: { backgroundColor: '#ffffff', borderRadius: 20, padding: 12, flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: 'rgba(26,59,47,0.05)' },
-  petImage: { width: 70, height: 70, borderRadius: 15, backgroundColor: '#F0FAF5' },
+  petImageContainer: { width: 70, height: 70, borderRadius: 15, backgroundColor: '#F0FAF5', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  petImage: { width: '100%', height: '100%' },
+  petEmoji: { fontSize: 32 },
   petInfo: { flex: 1, marginLeft: 16 },
   petName: { fontSize: 18, fontWeight: '800', color: '#1A3B2F' },
   petSub: { fontSize: 14, color: 'rgba(26,59,47,0.5)', marginTop: 2 },

@@ -9,8 +9,8 @@ const petSchema = new mongoose.Schema(
 		type: {
 			type: String,
 			required: true,
-			enum: ["Dog", "Cat", "Bird", "Rabbit", "Hamster", "Fish", "Turtle", "Guinea Pig", "Other"],
-			default: "Dog",
+			enum: ["dog", "cat", "bird", "rabbit", "hamster", "fish", "turtle", "guinea pig", "other"],
+			default: "dog",
 		},
 		breed: {
 			type: String,
@@ -20,9 +20,19 @@ const petSchema = new mongoose.Schema(
 			type: Number,
 			required: true,
 		},
+		gender: {
+			type: String,
+			enum: ["male", "female"],
+			default: "male",
+		},
+		weight: {
+			type: String,
+		},
+		notes: {
+			type: String,
+		},
 		cutenessLevel: {
 			type: Number,
-			required: true,
 			default: 10,
 		},
 		imageUrl: {
