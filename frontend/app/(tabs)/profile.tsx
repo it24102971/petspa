@@ -174,64 +174,88 @@ export default function ProfileScreen() {
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.profileHeader}>
-          <View style={styles.avatarWrapper}>
+          <Pressable style={styles.avatarWrapper} onPress={pickImage}>
             {user?.profilePicture ? (
               <Image source={{ uri: getImageUrl(user.profilePicture) || '' }} style={styles.avatar} />
             ) : (
               <View style={styles.avatarPlaceholder}>
-                <Ionicons name="person" size={50} color="#1A3B2F" />
+                <Ionicons name="person" size={80} color="#1A3B2F" />
               </View>
             )}
             {user?.role !== 'admin' && (
-              <TouchableOpacity style={styles.camBadge} onPress={pickImage}>
-                <Ionicons name="camera" size={20} color="#1A3B2F" />
-              </TouchableOpacity>
+              <View style={styles.camBadge}>
+                <Ionicons name="camera" size={16} color="#1A3B2F" />
+              </View>
             )}
-          </View>
+          </Pressable>
 
-          <Text style={styles.userName}>{user?.role === 'admin' ? 'admin' : user?.fullName}</Text>
-          {user?.role !== 'admin' && (
-            <View style={styles.ratingRow}>
-              <Ionicons name="star" size={16} color="#FFD166" />
-              <Text style={styles.ratingText}>4.8 <Text style={styles.reviewCount}>(12 Reviews)</Text></Text>
-            </View>
-          )}
+          <Text style={styles.userName}>{user?.role === 'admin' ? 'Admin' : user?.fullName}</Text>
+          {user?.role === 'groomer' ? (
+            <Text style={styles.userRole}>PROFESSIONAL GROOMER</Text>
+          ) : user?.role === 'customer' ? (
+            <Text style={styles.userRole}>VALUED CUSTOMER</Text>
+          ) : null}
         </View>
 
         {user?.role === 'admin' ? (
           <View style={styles.infoSection}>
-            <InfoRow icon="mail-outline" label="Email" value="admin@petspa.com" />
+            <InfoCard icon="mail-outline" label="Email" value="admin@petspa.com" />
           </View>
         ) : !isEditing ? (
           <View style={styles.infoSection}>
-            <InfoRow icon="call-outline" label="Phone" value={user?.phoneNumber} />
-            <InfoRow icon="mail-outline" label="Email" value={user?.email} />
+            <InfoCard icon="call-outline" label="Phone" value={user?.phoneNumber} />
+            <InfoCard icon="mail-outline" label="Email" value={user?.email} />
+            
             {user?.role === 'groomer' && (
               <>
-                <InfoRow icon="calendar-outline" label="Experience" value={user?.experience || 'N/A'} />
-                <InfoRow icon="paw-outline" label="Specialization" value={user?.specialization || 'N/A'} />
-                <InfoRow icon="time-outline" label="Availability" value={`${user?.availableDays || 'Mon - Sat'} (${user?.availableTime || '9AM - 6PM'})`} />
+                <InfoCard icon="calendar-outline" label="Experience" value={user?.experience || '2 Years'} />
+                <InfoCard icon="medal-outline" label="Specialization" value={user?.specialization || 'Basic Grooming'} />
+                
+                <View style={styles.aboutCard}>
+                  <Text style={styles.aboutTitle}>About Groomer</Text>
+                  <Text style={styles.aboutText}>
+                    {user?.aboutMe || 'This groomer has not provided a description yet.'}
+                  </Text>
+                </View>
               </>
             )}
-            <InfoRow icon="location-outline" label="Address" value={user?.address || 'Not set'} />
+            
+            {user?.role === 'customer' && (
+              <InfoCard icon="location-outline" label="Address" value={user?.address || 'Not set'} />
+            )}
 
-            <TouchableOpacity style={styles.mainEditBtn} onPress={() => setIsEditing(true)}>
-              <Text style={styles.mainEditBtnText}>Edit Profile</Text>
+            {user?.role === 'groomer' && user?.updatedAt && (
+              <Text style={styles.lastUpdatedText}>
+                Profile last updated on: {new Date(user.updatedAt).toLocaleDateString('en-US', { 
+                  year: 'numeric', 
+                  month: 'short', 
+                  day: 'numeric' 
+                })}
+              </Text>
+            )}
+
+            <TouchableOpacity 
+              style={styles.doneBtn} 
+              onPress={() => setIsEditing(true)}
+            >
+              <Text style={styles.doneBtnText}>Update Profile</Text>
             </TouchableOpacity>
           </View>
         ) : (
           <View style={styles.form}>
-            <InputGroup label="Full Name" value={formData.fullName} onChange={(t) => setFormData({...formData, fullName: t})} />
-            <InputGroup label="Phone" value={formData.phoneNumber} onChange={(t) => setFormData({...formData, phoneNumber: t})} />
-            <InputGroup label="Address" value={formData.address} onChange={(t) => setFormData({...formData, address: t})} multiline />
-            
-            {user?.role === 'groomer' && (
+            {user?.role === 'groomer' ? (
               <>
-                <InputGroup label="Experience" value={formData.experience} onChange={(t) => setFormData({...formData, experience: t})} />
+                <InputGroup label="Full Name" value={formData.fullName} onChange={(t) => setFormData({...formData, fullName: t})} />
+                <InputGroup label="Email" value={formData.email} onChange={(t) => setFormData({...formData, email: t})} />
+                <InputGroup label="Experience (Years)" value={formData.experience} onChange={(t) => setFormData({...formData, experience: t})} />
                 <InputGroup label="Specialization" value={formData.specialization} onChange={(t) => setFormData({...formData, specialization: t})} />
-                <InputGroup label="Available Days" value={formData.availableDays} onChange={(t) => setFormData({...formData, availableDays: t})} placeholder="e.g. Mon - Fri" />
-                <InputGroup label="Available Time" value={formData.availableTime} onChange={(t) => setFormData({...formData, availableTime: t})} placeholder="e.g. 8AM - 5PM" />
                 <InputGroup label="About Me" value={formData.aboutMe} onChange={(t) => setFormData({...formData, aboutMe: t})} multiline />
+              </>
+            ) : (
+              <>
+                <InputGroup label="Full Name" value={formData.fullName} onChange={(t) => setFormData({...formData, fullName: t})} />
+                <InputGroup label="Phone" value={formData.phoneNumber} onChange={(t) => setFormData({...formData, phoneNumber: t})} />
+                <InputGroup label="Address" value={formData.address} onChange={(t) => setFormData({...formData, address: t})} multiline />
               </>
             )}
 
@@ -250,13 +274,15 @@ export default function ProfileScreen() {
   );
 }
 
-const InfoRow = ({ icon, label, value }: any) => (
-  <View style={styles.infoRow}>
-    <View style={styles.infoIconBox}>
-      <Ionicons name={icon} size={22} color="#1A3B2F" />
+const InfoCard = ({ icon, label, value }: any) => (
+  <View style={styles.infoCard}>
+    <View style={styles.cardIconBox}>
+      <Ionicons name={icon} size={22} color="#FFD166" />
     </View>
-    <Text style={styles.infoLabel}>{label}</Text>
-    <Text style={styles.infoValue} numberOfLines={1}>{value}</Text>
+    <View style={styles.cardContent}>
+      <Text style={styles.cardLabel}>{label.toUpperCase()}</Text>
+      <Text style={styles.cardValue}>{value || 'Not set'}</Text>
+    </View>
   </View>
 );
 
@@ -288,22 +314,90 @@ const styles = StyleSheet.create({
   headerTitle: { fontSize: 20, fontWeight: '900', color: '#1A3B2F' },
   headerBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
   scrollContent: { paddingBottom: 100 },
-  profileHeader: { alignItems: 'center', marginTop: 20, marginBottom: 30 },
-  avatarWrapper: { width: 140, height: 140, borderRadius: 70, backgroundColor: '#F0FAF5', position: 'relative', elevation: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 15 },
-  avatar: { width: '100%', height: '100%', borderRadius: 70 },
+  profileHeader: { alignItems: 'center', marginTop: 30, marginBottom: 40 },
+  avatarWrapper: { 
+    width: 160, 
+    height: 160, 
+    borderRadius: 45, 
+    backgroundColor: '#FFD166', 
+    alignItems: 'center', 
+    justifyContent: 'center',
+    position: 'relative',
+    shadowColor: '#FFD166',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 8,
+  },
+  avatar: { width: '100%', height: '100%', borderRadius: 45 },
   avatarPlaceholder: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  camBadge: { position: 'absolute', bottom: 5, right: 5, backgroundColor: '#FFD166', width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', borderWidth: 4, borderColor: '#fff' },
-  userName: { fontSize: 24, fontWeight: '900', color: '#1A3B2F', marginTop: 16 },
-  ratingRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 6 },
-  ratingText: { fontSize: 15, fontWeight: '800', color: '#1A3B2F' },
-  reviewCount: { color: 'rgba(26, 59, 47, 0.4)', fontWeight: '600' },
-  infoSection: { paddingHorizontal: 24, gap: 10 },
-  infoRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12 },
-  infoIconBox: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-  infoLabel: { fontSize: 15, fontWeight: '700', color: 'rgba(26, 59, 47, 0.5)', marginLeft: 8, flex: 1 },
-  infoValue: { fontSize: 15, fontWeight: '800', color: '#1A3B2F' },
-  mainEditBtn: { backgroundColor: '#FFD166', height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', marginTop: 30, shadowColor: '#FFD166', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 },
-  mainEditBtnText: { fontSize: 18, fontWeight: '900', color: '#1A3B2F' },
+  camBadge: { 
+    position: 'absolute', 
+    bottom: -5, 
+    right: -5, 
+    backgroundColor: '#fff', 
+    width: 32, 
+    height: 32, 
+    borderRadius: 16, 
+    alignItems: 'center', 
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#FFD166'
+  },
+  userName: { fontSize: 28, fontWeight: '900', color: '#1A3B2F', marginTop: 24 },
+  userRole: { fontSize: 14, fontWeight: '800', color: '#FFD166', marginTop: 4, letterSpacing: 0.5 },
+  infoSection: { paddingHorizontal: 20, gap: 12 },
+  infoCard: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    backgroundColor: '#F0FAF5', 
+    borderRadius: 20, 
+    padding: 16,
+    height: 75,
+  },
+  cardIconBox: { 
+    width: 44, 
+    height: 44, 
+    borderRadius: 15, 
+    backgroundColor: '#fff', 
+    alignItems: 'center', 
+    justifyContent: 'center' 
+  },
+  cardContent: { flex: 1, marginLeft: 15 },
+  cardLabel: { fontSize: 10, fontWeight: '800', color: 'rgba(26, 59, 47, 0.4)', letterSpacing: 1 },
+  cardValue: { fontSize: 16, fontWeight: '800', color: '#1A3B2F', marginTop: 2 },
+  aboutCard: { 
+    backgroundColor: '#fff', 
+    borderRadius: 20, 
+    padding: 20, 
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: '#F0FAF5',
+  },
+  aboutTitle: { fontSize: 15, fontWeight: '900', color: '#1A3B2F', marginBottom: 10 },
+  aboutText: { fontSize: 14, color: 'rgba(26, 59, 47, 0.6)', lineHeight: 22, fontWeight: '600' },
+  doneBtn: { 
+    backgroundColor: '#1A3B2F', 
+    height: 65, 
+    borderRadius: 32.5, 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    marginTop: 30,
+    shadowColor: '#1A3B2F',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.2,
+    shadowRadius: 15,
+    elevation: 5,
+  },
+  doneBtnText: { fontSize: 18, fontWeight: '900', color: '#fff' },
+  lastUpdatedText: { 
+    fontSize: 12, 
+    color: 'rgba(26, 59, 47, 0.4)', 
+    textAlign: 'center', 
+    marginTop: 20, 
+    fontWeight: '600',
+    fontStyle: 'italic'
+  },
   form: { paddingHorizontal: 24, gap: 16 },
   inputGroup: { gap: 6 },
   label: { fontSize: 13, fontWeight: '800', color: 'rgba(26, 59, 47, 0.5)', marginLeft: 4 },
