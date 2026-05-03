@@ -266,7 +266,7 @@ const GroomerDashboardContent = ({ user, onLogout, onOpenSidebar, stats, router,
   );
 };
 
-const AdminDashboardContent = ({ user, onLogout, onOpenSidebar, onAddGroomer, onManageGroomers, router, stats }: any) => (
+const AdminDashboardContent = ({ user, onOpenSidebar, onAddGroomer, router, stats }: any) => (
   <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
     {/* Header */}
     <View style={styles.header}>
@@ -286,13 +286,13 @@ const AdminDashboardContent = ({ user, onLogout, onOpenSidebar, onAddGroomer, on
             <Image source={{ uri: getImageUrl(user.profilePicture) || '' }} style={styles.groomerAvatarImage} />
           ) : (
             <View style={styles.groomerAvatarPlaceholder}>
-              <Ionicons name="person" size={50} color="#1A3B2F" />
+              <Ionicons name="shield-checkmark" size={40} color="#1A3B2F" />
             </View>
           )}
         </View>
         <View style={styles.welcomeTextContainer}>
           <Text style={styles.welcomeGreeting}>Hello, {user?.fullName || 'Admin'}! 👋</Text>
-          <Text style={styles.welcomeSubtext}>System Administrator Access</Text>
+          <Text style={styles.welcomeSubtext}>System Administrator</Text>
         </View>
       </View>
     </View>
@@ -300,20 +300,14 @@ const AdminDashboardContent = ({ user, onLogout, onOpenSidebar, onAddGroomer, on
     {/* Stats Grid */}
     <View style={styles.statsGrid}>
       <View style={styles.statsRow}>
-        <Pressable
-          style={[styles.statBox, { backgroundColor: '#ffffff' }]}
-          onPress={() => router.push('/admin/users')}
-        >
+        <Pressable style={[styles.statBox, { backgroundColor: '#ffffff' }]} onPress={() => router.push('/admin/users')}>
           <View style={styles.statBoxHeader}>
             <Text style={styles.statBoxNumber}>{stats?.totalUsers || 0}</Text>
             <Ionicons name="people" size={20} color="#FFD166" />
           </View>
           <Text style={styles.statBoxLabel}>Total Users</Text>
         </Pressable>
-        <Pressable
-          style={[styles.statBox, { backgroundColor: '#ffffff' }]}
-          onPress={() => router.push('/admin/appointments')}
-        >
+        <Pressable style={[styles.statBox, { backgroundColor: '#ffffff' }]} onPress={() => router.push('/admin/appointments')}>
           <View style={styles.statBoxHeader}>
             <Text style={styles.statBoxNumber}>{stats?.appointments || 0}</Text>
             <Ionicons name="calendar" size={20} color="#FFD166" />
@@ -322,10 +316,7 @@ const AdminDashboardContent = ({ user, onLogout, onOpenSidebar, onAddGroomer, on
         </Pressable>
       </View>
       <View style={styles.statsRow}>
-        <Pressable
-          style={[styles.statBox, { backgroundColor: '#ffffff' }]}
-          onPress={() => router.push('/admin/groomers')}
-        >
+        <Pressable style={[styles.statBox, { backgroundColor: '#ffffff' }]} onPress={() => router.push('/admin/groomers')}>
           <View style={styles.statBoxHeader}>
             <Text style={styles.statBoxNumber}>{stats?.activeGroomers || 0}</Text>
             <Ionicons name="cut" size={20} color="#FFD166" />
@@ -334,7 +325,7 @@ const AdminDashboardContent = ({ user, onLogout, onOpenSidebar, onAddGroomer, on
         </Pressable>
         <View style={[styles.statBox, { backgroundColor: '#ffffff' }]}>
           <View style={styles.statBoxHeader}>
-            <Text style={styles.statBoxNumber}>{stats?.avgRating || "0.0"}</Text>
+            <Text style={styles.statBoxNumber}>{stats?.avgRating || '0.0'}</Text>
             <Ionicons name="star" size={20} color="#FFD166" />
           </View>
           <Text style={styles.statBoxLabel}>Avg Rating</Text>
@@ -349,25 +340,58 @@ const AdminDashboardContent = ({ user, onLogout, onOpenSidebar, onAddGroomer, on
     <View style={styles.managementGrid}>
       <Pressable style={styles.managementCard} onPress={() => router.push('/admin/appointments')}>
         <View style={[styles.managementIconContainer, { backgroundColor: '#E3F2FD' }]}>
-          <Ionicons name="calendar" size={24} color="#1976D2" />
+          <Ionicons name="calendar-outline" size={24} color="#1976D2" />
         </View>
-        <Text style={styles.managementLabel}>Book Appt.</Text>
+        <Text style={styles.managementLabel}>Appointments</Text>
+      </Pressable>
+      <Pressable style={styles.managementCard} onPress={() => router.push('/admin/users')}>
+        <View style={[styles.managementIconContainer, { backgroundColor: '#F3E5F5' }]}>
+          <Ionicons name="people-outline" size={24} color="#7B1FA2" />
+        </View>
+        <Text style={styles.managementLabel}>Users</Text>
+      </Pressable>
+      <Pressable style={styles.managementCard} onPress={() => router.push('/admin/groomers')}>
+        <View style={[styles.managementIconContainer, { backgroundColor: '#E8F5E9' }]}>
+          <Ionicons name="cut-outline" size={24} color="#2E7D32" />
+        </View>
+        <Text style={styles.managementLabel}>Groomers</Text>
       </Pressable>
       <Pressable style={styles.managementCard} onPress={() => router.push('/(tabs)/spa')}>
         <View style={[styles.managementIconContainer, { backgroundColor: '#EAF5EF' }]}>
-          <Ionicons name="sparkles" size={24} color="#1A3B2F" />
+          <Ionicons name="sparkles-outline" size={24} color="#1A3B2F" />
         </View>
         <Text style={styles.managementLabel}>Services</Text>
       </Pressable>
-      <Pressable style={styles.managementCard} onPress={onAddGroomer}>
-        <View style={[styles.managementIconContainer, { backgroundColor: '#1A3B2F' }]}>
-          <Ionicons name="person-add" size={24} color="#ffffff" />
+      <Pressable style={styles.managementCard} onPress={() => router.push('/admin/cafe')}>
+        <View style={[styles.managementIconContainer, { backgroundColor: '#FFF8E1' }]}>
+          <Ionicons name="cafe-outline" size={24} color="#F57F17" />
         </View>
-        <Text style={styles.managementLabel}>New Groomer</Text>
+        <Text style={styles.managementLabel}>Cafe</Text>
+      </Pressable>
+      <Pressable style={styles.managementCard} onPress={() => router.push('/admin/reviews')}>
+        <View style={[styles.managementIconContainer, { backgroundColor: '#FCE4EC' }]}>
+          <Ionicons name="star-outline" size={24} color="#C62828" />
+        </View>
+        <Text style={styles.managementLabel}>Reviews</Text>
       </Pressable>
     </View>
+
+    {/* Add Groomer Quick Action */}
+    <Pressable
+      style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#1A3B2F', borderRadius: 16, padding: 18, marginTop: 16, gap: 14 }}
+      onPress={onAddGroomer}
+    >
+      <Ionicons name="person-add-outline" size={24} color="#FFD166" />
+      <View style={{ flex: 1 }}>
+        <Text style={{ fontSize: 16, fontWeight: '900', color: '#fff' }}>Add New Groomer</Text>
+        <Text style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', marginTop: 2 }}>Register a new groomer profile</Text>
+      </View>
+      <Ionicons name="chevron-forward" size={20} color="#FFD166" />
+    </Pressable>
   </ScrollView>
 );
+
+
 
 // --- Main Screen ---
 
