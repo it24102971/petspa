@@ -150,7 +150,7 @@ const Sidebar = ({ isVisible, onClose }: SidebarProps) => {
               <SidebarItem
                 icon="calendar-outline"
                 label="My Bookings"
-                onPress={() => handleNavigate('/(tabs)/history')}
+                onPress={() => handleNavigate('/(tabs)/appointments?filter=Confirmed')}
               />
             )}
             {user?.role === 'customer' && (

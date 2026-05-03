@@ -21,7 +21,7 @@ const getImageUrl = (url: string | null | undefined) => {
 
 // --- Components ---
 
-const CustomerDashboardContent = ({ user, onLogout, onExplore, onOpenSidebar, onCafe, onPets, stats }: any) => (
+const CustomerDashboardContent = ({ user, onLogout, onExplore, onOpenSidebar, onCafe, onPets, stats, appointments }: any) => (
   <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
     <View style={styles.header}>
       <View style={styles.headerLeft}>
@@ -63,17 +63,42 @@ const CustomerDashboardContent = ({ user, onLogout, onExplore, onOpenSidebar, on
       </View>
     </View>
 
-    <Text style={styles.sectionTitle}>Upcoming Appointments</Text>
-    <View style={styles.emptyState}>
-      <View style={styles.emptyIconContainer}>
-        <Ionicons name="calendar-outline" size={40} color="#FFD166" />
-      </View>
-      <Text style={styles.emptyStateTitle}>No appointments planned yet</Text>
-      <Text style={styles.emptyStateSub}>Book an appointment to pamper your furry friend.</Text>
-      <Pressable style={styles.actionButton} onPress={onExplore}>
-        <Text style={styles.actionButtonText}>Book Appointment</Text>
+    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+      <Text style={[styles.sectionTitle, { marginBottom: 0 }]}>Recent Appointments</Text>
+      <Pressable onPress={onExplore}>
+        <Text style={{ color: '#FFD166', fontWeight: '800', fontSize: 14 }}>+ Book New</Text>
       </Pressable>
     </View>
+
+    {appointments && appointments.length > 0 ? (
+      appointments.map((item: any) => (
+        <View key={item._id} style={{ backgroundColor: '#fff', padding: 16, borderRadius: 20, marginBottom: 12, borderWidth: 1, borderColor: '#eee' }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            <Text style={{ fontSize: 16, fontWeight: '800', color: '#1A3B2F' }}>
+              {item.serviceName || item.groomerName || 'Appointment'}
+            </Text>
+            <View style={{ backgroundColor: item.status === 'Pending' ? '#FFF3E0' : '#E0F2F1', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 }}>
+              <Text style={{ fontSize: 10, fontWeight: '800', color: item.status === 'Pending' ? '#E65100' : '#00897B' }}>{item.status}</Text>
+            </View>
+          </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8, gap: 5 }}>
+            <Ionicons name="calendar-outline" size={14} color="#666" />
+            <Text style={{ fontSize: 13, color: '#666' }}>{item.appointmentDate} at {item.appointmentTime}</Text>
+          </View>
+        </View>
+      ))
+    ) : (
+      <View style={styles.emptyState}>
+        <View style={styles.emptyIconContainer}>
+          <Ionicons name="calendar-outline" size={40} color="#FFD166" />
+        </View>
+        <Text style={styles.emptyStateTitle}>No appointments planned yet</Text>
+        <Text style={styles.emptyStateSub}>Book an appointment to pamper your furry friend.</Text>
+        <Pressable style={styles.actionButton} onPress={onExplore}>
+          <Text style={styles.actionButtonText}>Book Appointment</Text>
+        </Pressable>
+      </View>
+    )}
   </ScrollView>
 );
 
@@ -351,6 +376,7 @@ export default function DashboardScreen() {
   const [loading, setLoading] = useState(true);
   const [groomerStats, setGroomerStats] = useState<any>(null);
   const [customerStats, setCustomerStats] = useState<any>(null);
+  const [customerAppointments, setCustomerAppointments] = useState<any[]>([]);
   const [adminStats, setAdminStats] = useState<any>(null);
   const [notifications, setNotifications] = useState<any[]>([]);
   const { openSidebar } = useSidebar();
@@ -397,12 +423,17 @@ export default function DashboardScreen() {
                 setNotifications(notifData);
               }
             } else if (parsedUser.role === 'customer' && token) {
-              const statsRes = await fetch(`${API_BASE_URL}/auth/dashboard-stats`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-              });
+              const [statsRes, bookingsRes] = await Promise.all([
+                fetch(`${API_BASE_URL}/auth/dashboard-stats`, { headers: { 'Authorization': `Bearer ${token}` } }),
+                fetch(`${API_BASE_URL}/spa-services/bookings`, { headers: { 'Authorization': `Bearer ${token}` } })
+              ]);
               if (statsRes.ok) {
                 const statsData = await statsRes.json();
                 setCustomerStats(statsData);
+              }
+              if (bookingsRes.ok) {
+                const bookingsData = await bookingsRes.json();
+                setCustomerAppointments(bookingsData.slice(0, 3)); // show top 3
               }
             } else if (parsedUser.role === 'admin' && token) {
               const statsRes = await fetch(`${API_BASE_URL}/admin/dashboard-stats`, {
@@ -491,11 +522,12 @@ export default function DashboardScreen() {
           <CustomerDashboardContent 
             user={user} 
             onLogout={handleLogout}
-            onExplore={() => router.push('/(tabs)/explore')}
+            onExplore={() => router.push('/(tabs)/appointments')}
             onOpenSidebar={openSidebar}
             onCafe={() => router.push('/cafe' as any)}
             onPets={() => router.push('/(tabs)/profile')}
             stats={customerStats}
+            appointments={customerAppointments}
             router={router}
           />
         )}
