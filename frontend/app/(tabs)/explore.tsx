@@ -170,30 +170,31 @@ export default function BookingScreen() {
 
         {/* Groomers Section */}
         <Text style={styles.sectionTitle}>Available Groomers</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalList}>
-          {groomers.map(groomer => (
-            <Pressable 
-              key={groomer._id} 
-              style={[styles.groomerCard, selectedGroomer?._id === groomer._id && styles.selectedCard]}
-              onPress={() => setSelectedGroomer(selectedGroomer?._id === groomer._id ? null : groomer)}
-            >
-              {groomer.profilePicture ? (
-                <Image source={{ uri: getImageUrl(groomer.profilePicture) }} style={styles.groomerImg} />
-              ) : (
-                <View style={styles.groomerPlaceholder}>
-                  <Ionicons name="person" size={24} color="#1A3B2F" />
-                </View>
-              )}
-              <Text style={styles.groomerName}>{groomer.fullName.split(' ')[0]}</Text>
-              <Text style={styles.groomerSpec}>{groomer.specialization || 'General Grooming'}</Text>
-              {selectedGroomer?._id === groomer._id && (
-                <View style={styles.checkBadge}>
-                  <Ionicons name="checkmark" size={14} color="#fff" />
-                </View>
-              )}
-            </Pressable>
-          ))}
-        </ScrollView>
+        {groomers.map(groomer => (
+          <Pressable 
+            key={groomer._id} 
+            style={[styles.serviceCard, selectedGroomer?._id === groomer._id && styles.selectedCard]}
+            onPress={() => setSelectedGroomer(selectedGroomer?._id === groomer._id ? null : groomer)}
+          >
+            {groomer.profilePicture ? (
+              <Image source={{ uri: getImageUrl(groomer.profilePicture) }} style={styles.groomerRowImg} />
+            ) : (
+              <View style={styles.groomerRowPlaceholder}>
+                <Ionicons name="person" size={24} color="#1A3B2F" />
+              </View>
+            )}
+            <View style={styles.serviceInfo}>
+              <Text style={styles.serviceName}>{groomer.fullName}</Text>
+              <Text style={styles.serviceDesc}>{groomer.specialization || 'General Grooming'}</Text>
+              <Text style={styles.serviceDuration}>
+                <Ionicons name="calendar-outline" /> {groomer.availableDays || 'Mon-Sun'}  •  <Ionicons name="time-outline" /> {groomer.availableTime || '9AM-5PM'}
+              </Text>
+            </View>
+            {selectedGroomer?._id === groomer._id && (
+              <Ionicons name="checkmark-circle" size={28} color="#FFD166" style={{ marginLeft: 10 }} />
+            )}
+          </Pressable>
+        ))}
 
         {/* Services Section */}
         <Text style={styles.sectionTitle}>Spa Services</Text>
@@ -298,13 +299,9 @@ const styles = StyleSheet.create({
   subtitle: { color: '#475569', fontSize: 14, marginTop: 5 },
   sectionTitle: { fontSize: 18, fontWeight: '800', color: '#1A3B2F', marginTop: 25, marginBottom: 12 },
   horizontalList: { gap: 15 },
-  groomerCard: { width: 120, padding: 15, backgroundColor: '#fff', borderRadius: 20, alignItems: 'center', borderWidth: 2, borderColor: 'transparent' },
+  groomerRowImg: { width: 50, height: 50, borderRadius: 25, marginRight: 15 },
+  groomerRowPlaceholder: { width: 50, height: 50, borderRadius: 25, backgroundColor: '#F0FAF5', alignItems: 'center', justifyContent: 'center', marginRight: 15 },
   selectedCard: { borderColor: '#FFD166', backgroundColor: '#FFFAED' },
-  groomerImg: { width: 60, height: 60, borderRadius: 30, marginBottom: 10 },
-  groomerPlaceholder: { width: 60, height: 60, borderRadius: 30, backgroundColor: '#F0FAF5', alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
-  groomerName: { fontSize: 14, fontWeight: '800', color: '#1A3B2F' },
-  groomerSpec: { fontSize: 11, color: '#666', textAlign: 'center', marginTop: 4 },
-  checkBadge: { position: 'absolute', top: 10, right: 10, backgroundColor: '#FFD166', borderRadius: 10, width: 20, height: 20, alignItems: 'center', justifyContent: 'center' },
   serviceCard: { flexDirection: 'row', backgroundColor: '#fff', borderRadius: 16, padding: 16, marginBottom: 12, alignItems: 'center', borderWidth: 2, borderColor: 'transparent' },
   serviceInfo: { flex: 1 },
   serviceName: { fontSize: 16, fontWeight: '800', color: '#1A3B2F' },
