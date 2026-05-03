@@ -22,6 +22,7 @@ export default function ProfileScreen() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -30,13 +31,18 @@ export default function ProfileScreen() {
     aboutMe: '',
     experience: '',
     specialization: '',
+    availableDays: '',
+    availableTime: '',
   });
 
-  const loadUser = async () => {
+  const loadUser = useCallback(async () => {
     try {
-      const userData = await AsyncStorage.getItem(AUTH_USER_KEY);
-      if (userData) {
-        const parsed = JSON.parse(userData);
+      const token = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
+      const res = await fetch(`${API_BASE_URL}/auth/me`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const parsed = await res.json();
         setUser(parsed);
         setFormData({
           fullName: parsed.fullName || '',
@@ -46,18 +52,21 @@ export default function ProfileScreen() {
           aboutMe: parsed.aboutMe || '',
           experience: parsed.experience || '',
           specialization: parsed.specialization || '',
+          availableDays: parsed.availableDays || '',
+          availableTime: parsed.availableTime || '',
         });
+        await AsyncStorage.setItem(AUTH_USER_KEY, JSON.stringify(parsed));
       }
     } catch (error) {
       console.error("Load user failed:", error);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadUser();
-  }, []);
+  }, [loadUser]);
 
   const handleUpdateProfile = async () => {
     setUpdating(true);
@@ -74,9 +83,10 @@ export default function ProfileScreen() {
 
       const data = await response.json();
       if (response.ok) {
-        await AsyncStorage.setItem(AUTH_USER_KEY, JSON.stringify(data));
         setUser(data);
+        await AsyncStorage.setItem(AUTH_USER_KEY, JSON.stringify(data));
         Alert.alert("Success", "Profile updated successfully!");
+        setIsEditing(false);
       } else {
         Alert.alert("Error", data.message || "Update failed");
       }
@@ -90,7 +100,7 @@ export default function ProfileScreen() {
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert('Permission needed', 'We need access to your photos to update your profile picture.');
+      Alert.alert('Permission needed', 'We need access to your photos.');
       return;
     }
 
@@ -110,12 +120,11 @@ export default function ProfileScreen() {
     setUpdating(true);
     try {
       const token = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
-      const formData = new FormData();
-      
+      const fd = new FormData();
       const uriParts = uri.split('.');
       const fileType = uriParts[uriParts.length - 1];
 
-      formData.append('profilePicture', {
+      fd.append('profilePicture', {
         uri,
         name: `profile.${fileType}`,
         type: `image/${fileType}`,
@@ -123,24 +132,18 @@ export default function ProfileScreen() {
 
       const response = await fetch(`${API_BASE_URL}/auth/profile-picture`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json',
-        },
-        body: formData,
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: fd,
       });
 
       const data = await response.json();
       if (response.ok) {
-        await AsyncStorage.setItem(AUTH_USER_KEY, JSON.stringify(data.user));
         setUser(data.user);
-        Alert.alert("Success", "Profile picture updated!");
-      } else {
-        Alert.alert("Error", data.message || "Upload failed");
+        await AsyncStorage.setItem(AUTH_USER_KEY, JSON.stringify(data.user));
+        Alert.alert("Success", "Picture updated!");
       }
     } catch (error) {
-      console.error(error);
-      Alert.alert("Error", "Could not upload image");
+      Alert.alert("Error", "Upload failed");
     } finally {
       setUpdating(false);
     }
@@ -157,142 +160,149 @@ export default function ProfileScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="dark" />
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.header}>
-          <Text style={styles.title}>My Profile</Text>
-          <Text style={styles.subtitle}>Manage your personal information</Text>
-        </View>
+      
+      {/* Custom Header to match screenshot */}
+      <View style={styles.header}>
+        <Pressable onPress={() => router.back()} style={styles.headerBtn}>
+          <Ionicons name="menu" size={28} color="#1A3B2F" />
+        </Pressable>
+        <Text style={styles.headerTitle}>Profile</Text>
+        <Pressable style={styles.headerBtn}>
+          <Ionicons name="notifications-outline" size={24} color="#1A3B2F" />
+        </Pressable>
+      </View>
 
-        <View style={styles.avatarSection}>
-          <TouchableOpacity onPress={pickImage} disabled={updating}>
-            <View style={styles.avatarContainer}>
-              {user?.profilePicture ? (
-                <Image source={{ uri: getImageUrl(user.profilePicture) || '' }} style={styles.avatar} />
-              ) : (
-                <View style={styles.avatarPlaceholder}>
-                  <Ionicons name="person" size={50} color="#1A3B2F" />
-                </View>
-              )}
-              <View style={styles.editBadge}>
-                <Ionicons name="camera" size={20} color="#fff" />
-              </View>
-            </View>
-          </TouchableOpacity>
-          <Text style={styles.roleText}>{user?.role?.toUpperCase()}</Text>
-        </View>
-
-        <View style={styles.form}>
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Full Name</Text>
-            <TextInput
-              style={styles.input}
-              value={formData.fullName}
-              onChangeText={(text) => setFormData({ ...formData, fullName: text })}
-              placeholder="Enter your name"
-            />
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Email Address</Text>
-            <TextInput
-              style={[styles.input, styles.disabledInput]}
-              value={formData.email}
-              editable={false}
-            />
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Phone Number</Text>
-            <TextInput
-              style={styles.input}
-              value={formData.phoneNumber}
-              onChangeText={(text) => setFormData({ ...formData, phoneNumber: text })}
-              placeholder="e.g. +94 77 123 4567"
-              keyboardType="phone-pad"
-            />
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Address</Text>
-            <TextInput
-              style={[styles.input, { height: 80, paddingTop: 12 }]}
-              value={formData.address}
-              onChangeText={(text) => setFormData({ ...formData, address: text })}
-              placeholder="Enter your address"
-              multiline
-            />
-          </View>
-
-          {user?.role === 'groomer' && (
-            <>
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Specialization</Text>
-                <TextInput
-                  style={styles.input}
-                  value={formData.specialization}
-                  onChangeText={(text) => setFormData({ ...formData, specialization: text })}
-                  placeholder="e.g. Cat Grooming, Large Dogs"
-                />
-              </View>
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Years of Experience</Text>
-                <TextInput
-                  style={styles.input}
-                  value={formData.experience}
-                  onChangeText={(text) => setFormData({ ...formData, experience: text })}
-                  placeholder="e.g. 5 years"
-                  keyboardType="numeric"
-                />
-              </View>
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>About Me</Text>
-                <TextInput
-                  style={[styles.input, { height: 100, paddingTop: 12 }]}
-                  value={formData.aboutMe}
-                  onChangeText={(text) => setFormData({ ...formData, aboutMe: text })}
-                  placeholder="Tell customers about yourself"
-                  multiline
-                />
-              </View>
-            </>
-          )}
-
-          <TouchableOpacity 
-            style={[styles.saveButton, updating && styles.disabledButton]} 
-            onPress={handleUpdateProfile}
-            disabled={updating}
-          >
-            {updating ? (
-              <ActivityIndicator color="#1A3B2F" />
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <View style={styles.profileHeader}>
+          <View style={styles.avatarWrapper}>
+            {user?.profilePicture ? (
+              <Image source={{ uri: getImageUrl(user.profilePicture) || '' }} style={styles.avatar} />
             ) : (
-              <Text style={styles.saveButtonText}>Save Changes</Text>
+              <View style={styles.avatarPlaceholder}>
+                <Ionicons name="person" size={50} color="#1A3B2F" />
+              </View>
             )}
-          </TouchableOpacity>
+            <TouchableOpacity style={styles.camBadge} onPress={pickImage}>
+              <Ionicons name="camera" size={20} color="#1A3B2F" />
+            </TouchableOpacity>
+          </View>
+
+          <Text style={styles.userName}>{user?.fullName}</Text>
+          <View style={styles.ratingRow}>
+            <Ionicons name="star" size={16} color="#FFD166" />
+            <Text style={styles.ratingText}>4.8 <Text style={styles.reviewCount}>(12 Reviews)</Text></Text>
+          </View>
         </View>
+
+        {!isEditing ? (
+          <View style={styles.infoSection}>
+            <InfoRow icon="call-outline" label="Phone" value={user?.phoneNumber} />
+            <InfoRow icon="mail-outline" label="Email" value={user?.email} />
+            {user?.role === 'groomer' && (
+              <>
+                <InfoRow icon="calendar-outline" label="Experience" value={user?.experience || 'N/A'} />
+                <InfoRow icon="paw-outline" label="Specialization" value={user?.specialization || 'N/A'} />
+                <InfoRow icon="time-outline" label="Availability" value={`${user?.availableDays || 'Mon - Sat'} (${user?.availableTime || '9AM - 6PM'})`} />
+              </>
+            )}
+            <InfoRow icon="location-outline" label="Address" value={user?.address || 'Not set'} />
+
+            <TouchableOpacity style={styles.mainEditBtn} onPress={() => setIsEditing(true)}>
+              <Text style={styles.mainEditBtnText}>Edit Profile</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <View style={styles.form}>
+            <InputGroup label="Full Name" value={formData.fullName} onChange={(t) => setFormData({...formData, fullName: t})} />
+            <InputGroup label="Phone" value={formData.phoneNumber} onChange={(t) => setFormData({...formData, phoneNumber: t})} />
+            <InputGroup label="Address" value={formData.address} onChange={(t) => setFormData({...formData, address: t})} multiline />
+            
+            {user?.role === 'groomer' && (
+              <>
+                <InputGroup label="Experience" value={formData.experience} onChange={(t) => setFormData({...formData, experience: t})} />
+                <InputGroup label="Specialization" value={formData.specialization} onChange={(t) => setFormData({...formData, specialization: t})} />
+                <InputGroup label="Available Days" value={formData.availableDays} onChange={(t) => setFormData({...formData, availableDays: t})} placeholder="e.g. Mon - Fri" />
+                <InputGroup label="Available Time" value={formData.availableTime} onChange={(t) => setFormData({...formData, availableTime: t})} placeholder="e.g. 8AM - 5PM" />
+                <InputGroup label="About Me" value={formData.aboutMe} onChange={(t) => setFormData({...formData, aboutMe: t})} multiline />
+              </>
+            )}
+
+            <View style={{ flexDirection: 'row', gap: 12, marginTop: 10 }}>
+              <TouchableOpacity style={[styles.saveBtn, { backgroundColor: '#f0f0f0', flex: 1 }]} onPress={() => setIsEditing(false)}>
+                <Text style={[styles.saveBtnText, { color: '#666' }]}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.saveBtn, { flex: 2 }]} onPress={handleUpdateProfile} disabled={updating}>
+                {updating ? <ActivityIndicator color="#1A3B2F" /> : <Text style={styles.saveBtnText}>Save Changes</Text>}
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
 }
 
+const InfoRow = ({ icon, label, value }: any) => (
+  <View style={styles.infoRow}>
+    <View style={styles.infoIconBox}>
+      <Ionicons name={icon} size={22} color="#1A3B2F" />
+    </View>
+    <Text style={styles.infoLabel}>{label}</Text>
+    <Text style={styles.infoValue} numberOfLines={1}>{value}</Text>
+  </View>
+);
+
+interface InputGroupProps {
+  label: string;
+  value: string;
+  onChange: (text: string) => void;
+  multiline?: boolean;
+  placeholder?: string;
+}
+
+const InputGroup = ({ label, value, onChange, multiline, placeholder }: InputGroupProps) => (
+  <View style={styles.inputGroup}>
+    <Text style={styles.label}>{label}</Text>
+    <TextInput
+      style={[styles.input, multiline && { height: 80, paddingTop: 12 }]}
+      value={value}
+      onChangeText={onChange}
+      multiline={multiline}
+      placeholder={placeholder}
+    />
+  </View>
+);
+
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F0FAF5' },
+  container: { flex: 1, backgroundColor: '#fff' },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  scrollContent: { padding: 24 },
-  header: { marginBottom: 32 },
-  title: { fontSize: 28, fontWeight: '900', color: '#1A3B2F', letterSpacing: -1 },
-  subtitle: { fontSize: 14, color: 'rgba(26, 59, 47, 0.6)', marginTop: 4, fontWeight: '600' },
-  avatarSection: { alignItems: 'center', marginBottom: 32 },
-  avatarContainer: { width: 120, height: 120, borderRadius: 40, backgroundColor: '#fff', position: 'relative', elevation: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 10 },
-  avatar: { width: '100%', height: '100%', borderRadius: 40 },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, height: 60 },
+  headerTitle: { fontSize: 20, fontWeight: '900', color: '#1A3B2F' },
+  headerBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
+  scrollContent: { paddingBottom: 100 },
+  profileHeader: { alignItems: 'center', marginTop: 20, marginBottom: 30 },
+  avatarWrapper: { width: 140, height: 140, borderRadius: 70, backgroundColor: '#F0FAF5', position: 'relative', elevation: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 15 },
+  avatar: { width: '100%', height: '100%', borderRadius: 70 },
   avatarPlaceholder: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  editBadge: { position: 'absolute', bottom: -5, right: -5, backgroundColor: '#1A3B2F', width: 40, height: 40, borderRadius: 15, alignItems: 'center', justifyContent: 'center', borderWidth: 3, borderColor: '#F0FAF5' },
-  roleText: { marginTop: 16, fontSize: 11, fontWeight: '900', color: '#1A3B2F', backgroundColor: '#FFD166', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 8, letterSpacing: 1 },
-  form: { gap: 20 },
-  inputGroup: { gap: 8 },
-  label: { fontSize: 13, fontWeight: '800', color: '#1A3B2F', marginLeft: 4 },
-  input: { backgroundColor: '#fff', borderRadius: 16, paddingHorizontal: 16, paddingVertical: 14, fontSize: 15, color: '#1A3B2F', borderWidth: 1, borderColor: 'rgba(26, 59, 47, 0.05)' },
-  disabledInput: { backgroundColor: '#f5f5f5', color: '#999' },
-  saveButton: { backgroundColor: '#FFD166', height: 56, borderRadius: 18, alignItems: 'center', justifyContent: 'center', marginTop: 20, shadowColor: '#FFD166', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 },
-  saveButtonText: { fontSize: 16, fontWeight: '900', color: '#1A3B2F' },
-  disabledButton: { opacity: 0.7 },
+  camBadge: { position: 'absolute', bottom: 5, right: 5, backgroundColor: '#FFD166', width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', borderWidth: 4, borderColor: '#fff' },
+  userName: { fontSize: 24, fontWeight: '900', color: '#1A3B2F', marginTop: 16 },
+  ratingRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 6 },
+  ratingText: { fontSize: 15, fontWeight: '800', color: '#1A3B2F' },
+  reviewCount: { color: 'rgba(26, 59, 47, 0.4)', fontWeight: '600' },
+  infoSection: { paddingHorizontal: 24, gap: 10 },
+  infoRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12 },
+  infoIconBox: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
+  infoLabel: { fontSize: 15, fontWeight: '700', color: 'rgba(26, 59, 47, 0.5)', marginLeft: 8, flex: 1 },
+  infoValue: { fontSize: 15, fontWeight: '800', color: '#1A3B2F' },
+  mainEditBtn: { backgroundColor: '#FFD166', height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', marginTop: 30, shadowColor: '#FFD166', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 },
+  mainEditBtnText: { fontSize: 18, fontWeight: '900', color: '#1A3B2F' },
+  form: { paddingHorizontal: 24, gap: 16 },
+  inputGroup: { gap: 6 },
+  label: { fontSize: 13, fontWeight: '800', color: 'rgba(26, 59, 47, 0.5)', marginLeft: 4 },
+  input: { backgroundColor: '#F8FBF9', borderRadius: 16, paddingHorizontal: 16, paddingVertical: 14, fontSize: 15, color: '#1A3B2F', borderWidth: 1, borderColor: '#eee' },
+  saveBtn: { backgroundColor: '#FFD166', height: 56, borderRadius: 18, alignItems: 'center', justifyContent: 'center', shadowColor: '#FFD166', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 },
+  saveBtnText: { fontSize: 16, fontWeight: '900', color: '#1A3B2F' },
 });
+
+
+

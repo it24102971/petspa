@@ -86,6 +86,7 @@ function TabLayoutContent() {
           options={{
             title: 'Appointments',
             tabBarIcon: ({ color }) => <Ionicons size={24} name="calendar" color={color} />,
+            href: userRole === 'admin' ? null : '/appointments',
           }}
         />
 
@@ -110,7 +111,7 @@ function TabLayoutContent() {
           options={{
             title: 'Spa',
             tabBarIcon: ({ color }) => <Ionicons size={24} name="sparkles" color={color} />,
-            href: userRole === 'groomer' ? null : '/spa',
+            href: userRole === 'admin' || userRole === 'groomer' ? null : '/spa',
           }}
         />
 

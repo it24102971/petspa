@@ -11,7 +11,7 @@ const spaBookingSchema = new mongoose.Schema(
     appointmentTime: { type: String, required: true },
     price: { type: Number, required: true },
     paymentSlip: { type: String, required: true },
-    status: { type: String, enum: ["Pending", "Confirmed", "Rejected"], default: "Pending" },
+    status: { type: String, enum: ["Pending", "Confirmed", "Accepted", "Completed", "Rejected"], default: "Pending" },
   },
   { timestamps: true }
 );

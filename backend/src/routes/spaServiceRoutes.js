@@ -10,6 +10,8 @@ import {
   bookSpaService,
   getAllBookings,
   verifyBooking,
+  acceptBooking,
+  completeBooking,
 } from "../controller/spaServiceController.js";
 
 const router = express.Router();
@@ -23,5 +25,7 @@ router.delete("/:id", protect, adminOnly, deleteService);
 router.post("/book", protect, upload.single("paymentSlip"), bookSpaService);
 router.get("/bookings", protect, getAllBookings);
 router.put("/bookings/:id/verify", protect, adminOnly, verifyBooking);
+router.put("/bookings/:id/accept", protect, acceptBooking);
+router.put("/bookings/:id/complete", protect, completeBooking);
 
 export default router;

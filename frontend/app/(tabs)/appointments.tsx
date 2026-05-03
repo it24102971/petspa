@@ -65,6 +65,17 @@ export default function AppointmentsScreen() {
   const [time, setTime] = useState('');
   const [paymentSlipUri, setPaymentSlipUri] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    const getRole = async () => {
+      const userData = await AsyncStorage.getItem("auth:user");
+      if (userData) {
+        setUserRole(JSON.parse(userData).role);
+      }
+    };
+    getRole();
+  }, []);
 
   useEffect(() => {
     fetchAppointments();
@@ -191,6 +202,9 @@ export default function AppointmentsScreen() {
         </View>
         
         <View style={styles.appointmentDetails}>
+          {userRole === 'admin' && item.userId?.fullName && (
+            <Text style={{ fontSize: 12, fontWeight: '800', color: '#FFD166', marginBottom: 2 }}>{item.userId.fullName}</Text>
+          )}
           <Text style={styles.petName}>{item.serviceName || item.groomerName || 'Spa Service'}</Text>
           <Text style={styles.petBreed}>
             {item.groomerName && item.serviceName ? `With ${item.groomerName}` : (item.serviceName ? 'Spa Treatment' : 'Grooming Session')}
@@ -398,13 +412,15 @@ export default function AppointmentsScreen() {
         }
       />
 
-      <TouchableOpacity 
-        style={styles.fab}
-        onPress={() => setViewMode('book')}
-      >
-        <Ionicons name="add" size={24} color="#1A3B2F" />
-        <Text style={styles.fabText}>Book</Text>
-      </TouchableOpacity>
+      {userRole !== 'admin' && userRole !== 'groomer' && (
+        <TouchableOpacity 
+          style={styles.fab}
+          onPress={() => setViewMode('book')}
+        >
+          <Ionicons name="add" size={24} color="#1A3B2F" />
+          <Text style={styles.fabText}>Book</Text>
+        </TouchableOpacity>
+      )}
     </SafeAreaView>
   );
 }

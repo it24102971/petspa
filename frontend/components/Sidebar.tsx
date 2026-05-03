@@ -16,9 +16,17 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_BASE_URL } from '@/constants/api';
 
 const { width } = Dimensions.get('window');
-const SIDEBAR_WIDTH = Math.min(width * 0.8, 310); // Standard drawer width with a max limit
+const SIDEBAR_WIDTH = Math.min(width * 0.8, 310);
+
+const getImageUrl = (url: string | null | undefined, API_BASE_URL: string) => {
+  if (!url) return null;
+  if (url.startsWith('http')) return url;
+  const baseUrl = API_BASE_URL.replace('/api', '');
+  return `${baseUrl}${url}`;
+};
 
 interface SidebarProps {
   isVisible: boolean;
@@ -99,7 +107,7 @@ const Sidebar = ({ isVisible, onClose }: SidebarProps) => {
           <View style={styles.sidebarHeader}>
             <View style={styles.avatarCircle}>
               {user?.profilePicture ? (
-                <Image source={{ uri: user.profilePicture }} style={styles.sidebarAvatarImage} />
+                <Image source={{ uri: getImageUrl(user.profilePicture, API_BASE_URL) || '' }} style={styles.sidebarAvatarImage} />
               ) : (
                 <Ionicons name="person" size={40} color="#1A3B2F" />
               )}
@@ -143,7 +151,7 @@ const Sidebar = ({ isVisible, onClose }: SidebarProps) => {
               <SidebarItem
                 icon="calendar-outline"
                 label="My Appointments"
-                onPress={() => handleNavigate('/groomer/appointments')}
+                onPress={() => handleNavigate('/(tabs)/appointments')}
               />
             )}
             {user?.role === 'customer' && (

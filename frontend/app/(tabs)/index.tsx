@@ -1,5 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, Pressable, RefreshControl, Platform, Image, ActivityIndicator, Alert, Modal, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, Pressable, RefreshControl, Platform, Image, ActivityIndicator, Alert, Modal, TouchableOpacity, Dimensions } from 'react-native';
+
+const { width } = Dimensions.get('window');
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -21,7 +23,7 @@ const getImageUrl = (url: string | null | undefined) => {
 
 // --- Components ---
 
-const CustomerDashboardContent = ({ user, onLogout, onExplore, onOpenSidebar, onCafe, onPets, stats, appointments }: any) => (
+const CustomerDashboardContent = ({ user, stats, router, appointments, onOpenSidebar, onPets, onCafe, availableGroomers }: any) => (
   <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
     <View style={styles.header}>
       <View style={styles.headerLeft}>
@@ -63,11 +65,31 @@ const CustomerDashboardContent = ({ user, onLogout, onExplore, onOpenSidebar, on
       </View>
     </View>
 
+    <View style={{ marginBottom: 24 }}>
+      <Text style={[styles.sectionTitle, { marginBottom: 16 }]}>Our Groomers</Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12 }}>
+        {availableGroomers && availableGroomers.length > 0 ? (
+          availableGroomers.map((groomer: any) => (
+            <View key={groomer._id} style={styles.groomerCardSmall}>
+              <View style={styles.groomerAvatarSmall}>
+                {groomer.profilePicture ? (
+                  <Image source={{ uri: getImageUrl(groomer.profilePicture) || '' }} style={styles.groomerImgSmall} />
+                ) : (
+                  <Ionicons name="person" size={30} color="#1A3B2F" />
+                )}
+              </View>
+              <Text style={styles.groomerNameSmall} numberOfLines={1}>{groomer.fullName}</Text>
+              <Text style={styles.groomerSpecSmall} numberOfLines={1}>{groomer.specialization || 'Pet Expert'}</Text>
+            </View>
+          ))
+        ) : (
+          <Text style={{ color: '#999', fontSize: 12 }}>No groomers available right now.</Text>
+        )}
+      </ScrollView>
+    </View>
+
     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
       <Text style={[styles.sectionTitle, { marginBottom: 0 }]}>Recent Appointments</Text>
-      <Pressable onPress={onExplore}>
-        <Text style={{ color: '#FFD166', fontWeight: '800', fontSize: 14 }}>+ Book New</Text>
-      </Pressable>
     </View>
 
     {appointments && appointments.length > 0 ? (
@@ -94,174 +116,159 @@ const CustomerDashboardContent = ({ user, onLogout, onExplore, onOpenSidebar, on
         </View>
         <Text style={styles.emptyStateTitle}>No appointments planned yet</Text>
         <Text style={styles.emptyStateSub}>Book an appointment to pamper your furry friend.</Text>
-        <Pressable style={styles.actionButton} onPress={onExplore}>
-          <Text style={styles.actionButtonText}>Book Appointment</Text>
-        </Pressable>
       </View>
     )}
   </ScrollView>
 );
 
-const GroomerDashboardContent = ({ user, onLogout, onOpenSidebar, stats, router, notifications, onMarkAsRead }: any) => {
+const GroomerDashboardContent = ({ user, stats, router, notifications, onMarkAsRead, availableJobs, mySchedule, reviews, onAcceptJob, onCompleteJob, onOpenSidebar }: any) => {
   const unreadCount = notifications.filter((n: any) => !n.isRead).length;
   const [showNotifications, setShowNotifications] = useState(false);
 
   return (
-  <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-    {/* Header */}
-    <View style={styles.header}>
-      <View style={styles.headerLeft}>
-        <Pressable onPress={onOpenSidebar} style={styles.menuButton} hitSlop={15}>
-          <Ionicons name="menu-outline" size={28} color="#1A3B2F" />
-        </Pressable>
-        <Text style={styles.dashboardTitle}>Dashboard</Text>
-      </View>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+    <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      {/* Header */}
+      <View style={styles.header}>
+        <View style={styles.headerLeft}>
+          <Pressable onPress={onOpenSidebar} style={styles.menuButton} hitSlop={15}>
+            <Ionicons name="menu-outline" size={28} color="#1A3B2F" />
+          </Pressable>
+          <Text style={styles.dashboardTitle}>Groomer Central</Text>
+        </View>
         <Pressable 
           style={styles.notificationButton} 
-          onPress={() => {
-            setShowNotifications(true);
-            onMarkAsRead();
-          }}
+          onPress={() => { setShowNotifications(true); onMarkAsRead(); }}
         >
           <Ionicons name="notifications-outline" size={24} color="#1A3B2F" />
           {unreadCount > 0 && <View style={styles.notificationBadge} />}
         </Pressable>
       </View>
-    </View>
 
-    {/* Notification Modal */}
-    <Modal
-      visible={showNotifications}
-      animationType="slide"
-      transparent={true}
-      onRequestClose={() => setShowNotifications(false)}
-    >
-      <View style={styles.modalOverlay}>
-        <View style={styles.notificationModal}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Notifications</Text>
-            <TouchableOpacity onPress={() => setShowNotifications(false)}>
-              <Ionicons name="close" size={24} color="#1A3B2F" />
-            </TouchableOpacity>
+      {/* Stats Row */}
+      <View style={styles.statsRow}>
+        <View style={styles.statBox}>
+          <View style={styles.statBoxHeader}>
+            <Text style={styles.statBoxNumber}>{stats?.todayCount || 0}</Text>
+            <Ionicons name="calendar" size={20} color="#FFD166" />
           </View>
-          <ScrollView style={styles.notificationList}>
-            {notifications.length > 0 ? (
-              notifications.map((notif: any) => (
-                <View key={notif._id} style={styles.notificationItem}>
-                  <View style={[styles.notifIcon, { backgroundColor: notif.type === 'booking' ? '#E8F5E9' : '#FFF3E0' }]}>
-                    <Ionicons 
-                      name={notif.type === 'booking' ? "calendar" : "notifications"} 
-                      size={20} 
-                      color={notif.type === 'booking' ? "#4CAF50" : "#FF9800"} 
-                    />
-                  </View>
-                  <View style={styles.notifText}>
-                    <Text style={styles.notifTitle}>{notif.title}</Text>
-                    <Text style={styles.notifMessage}>{notif.message}</Text>
-                    <Text style={styles.notifTime}>{new Date(notif.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
-                  </View>
-                </View>
-              ))
-            ) : (
-              <View style={styles.emptyNotif}>
-                <Ionicons name="notifications-off-outline" size={40} color="#ccc" />
-                <Text style={styles.emptyNotifText}>No notifications yet</Text>
-              </View>
-            )}
-          </ScrollView>
+          <Text style={styles.statBoxLabel}>Today's Jobs</Text>
+        </View>
+        <View style={styles.statBox}>
+          <View style={styles.statBoxHeader}>
+            <Text style={styles.statBoxNumber}>{availableJobs?.length || 0}</Text>
+            <Ionicons name="briefcase" size={20} color="#2196F3" />
+          </View>
+          <Text style={styles.statBoxLabel}>New Jobs</Text>
         </View>
       </View>
-    </Modal>
 
-    {/* Welcome Card */}
-    <View style={styles.welcomeCardContainer}>
-      <View style={styles.welcomeCardContent}>
-        <View style={styles.groomerAvatarContainer}>
-          {user?.profilePicture ? (
-            <Image source={{ uri: getImageUrl(user.profilePicture) || '' }} style={styles.groomerAvatarImage} />
+      {/* Available Jobs - Slider Bar */}
+      <View style={{ marginTop: 24 }}>
+        <Text style={styles.sectionTitle}>Available Jobs</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingBottom: 10 }}>
+          {availableJobs && availableJobs.length > 0 ? (
+            availableJobs.map((job: any) => (
+              <View key={job._id} style={[styles.jobCard, { width: 260, marginBottom: 0 }]}>
+                <View style={styles.jobInfo}>
+                  <View style={styles.jobAvatar}>
+                    <Ionicons name="paw" size={24} color="#1A3B2F" />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.jobPetName}>{job.petId?.name || 'Pet'}</Text>
+                    <Text style={styles.jobService} numberOfLines={1}>{job.serviceName}</Text>
+                  </View>
+                  <TouchableOpacity style={styles.jobAcceptBtn} onPress={() => onAcceptJob(job._id)}>
+                    <Text style={styles.jobAcceptText}>Accept</Text>
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.jobFooter}>
+                  <Text style={styles.jobMeta}><Ionicons name="time-outline" size={12}/> {job.appointmentDate} at {job.appointmentTime}</Text>
+                  <Text style={styles.jobMeta}><Ionicons name="cash-outline" size={12}/> Rs. {job.price}</Text>
+                </View>
+              </View>
+            ))
           ) : (
-            <View style={styles.groomerAvatarPlaceholder}>
-              <Ionicons name="person" size={50} color="#1A3B2F" />
+            <View style={[styles.emptyInline, { width: width - 48 }]}>
+              <Text style={styles.emptyInlineText}>No new jobs available right now.</Text>
             </View>
           )}
-        </View>
-        <View style={styles.welcomeTextContainer}>
-          <Text style={styles.welcomeGreeting}>Hello, {user?.fullName?.split(' ')[0] || 'Groomer'}! 👋</Text>
-          <Text style={styles.welcomeSubtext}>You have {stats?.todayCount || 0} jobs scheduled for today.</Text>
-        </View>
+        </ScrollView>
       </View>
-    </View>
 
-    {/* Stats Row */}
-    <View style={styles.statsRow}>
-      <View style={[styles.statBox, { backgroundColor: '#ffffff' }]}>
-        <View style={styles.statBoxHeader}>
-          <Text style={styles.statBoxNumber}>{stats?.todayCount || 0}</Text>
-          <Ionicons name="calendar" size={20} color="#FFD166" />
-        </View>
-        <Text style={styles.statBoxLabel}>Today's Jobs</Text>
-      </View>
-      <View style={[styles.statBox, { backgroundColor: '#ffffff' }]}>
-        <View style={styles.statBoxHeader}>
-          <Text style={styles.statBoxNumber}>{stats?.pendingVerified || 0}</Text>
-          <Ionicons name="alert-circle" size={20} color="#2196F3" />
-        </View>
-        <Text style={styles.statBoxLabel}>Available Jobs</Text>
-      </View>
-    </View>
-
-    {/* Manage Work */}
-    <View style={styles.manageSection}>
-      <Text style={styles.sectionTitle}>Manage Your Work</Text>
-      <View style={styles.actionCards}>
-        <Pressable 
-          style={styles.manageActionCard} 
-          onPress={() => router.push({ pathname: '/groomer/appointments', params: { type: 'schedule' } } as any)}
-        >
-          <View style={[styles.manageActionIcon, { backgroundColor: '#FFD16620' }]}>
-            <Ionicons name="calendar-outline" size={24} color="#FFD166" />
-          </View>
-          <Text style={styles.actionTitle}>My Schedule</Text>
-          <Text style={styles.actionSub}>View accepted jobs</Text>
-        </Pressable>
-        <Pressable 
-          style={styles.manageActionCard} 
-          onPress={() => router.push({ pathname: '/groomer/appointments', params: { type: 'jobs' } } as any)}
-        >
-          <View style={[styles.manageActionIcon, { backgroundColor: '#1A3B2F20' }]}>
-            <Ionicons name="search-outline" size={24} color="#1A3B2F" />
-          </View>
-          <Text style={styles.actionTitle}>Find Jobs</Text>
-          <Text style={styles.actionSub}>Browse verified bookings</Text>
-        </Pressable>
-      </View>
-    </View>
-
-    {/* Schedule List */}
-    <View style={styles.scheduleList}>
-      {[
-        { id: '1', pet: 'Buddy', breed: 'Golden Retriever', time: '10:00 AM', status: 'Pending', color: '#E0F2F1' },
-        { id: '2', pet: 'Lucy', breed: 'Poodle', time: '01:00 PM', status: 'Accepted', color: '#FFF3E0' },
-        { id: '3', pet: 'Max', breed: 'Shih Tzu', time: '04:00 PM', status: 'Pending', color: '#E0F2F1' },
-      ].map((item) => (
-        <View key={item.id} style={styles.scheduleCard}>
-          <View style={styles.petAvatarSmall}>
-            <Ionicons name="paw" size={24} color="#1A3B2F" />
-          </View>
-          <View style={styles.scheduleInfo}>
-            <Text style={styles.petNameText}>{item.pet}</Text>
-            <Text style={styles.petBreedText}>{item.breed}</Text>
-          </View>
-          <View style={styles.scheduleTimeStatus}>
-            <Text style={styles.scheduleTimeText}>{item.time}</Text>
-            <View style={[styles.statusBadgeSmall, { backgroundColor: item.status === 'Pending' ? '#E0F7FA' : '#FFF3E0' }]}>
-              <Text style={[styles.statusBadgeTextSmall, { color: item.status === 'Pending' ? '#006064' : '#E65100' }]}>{item.status}</Text>
+      {/* My Schedule */}
+      <View style={{ marginTop: 24 }}>
+        <Text style={styles.sectionTitle}>My Schedule</Text>
+        {mySchedule && mySchedule.length > 0 ? (
+          mySchedule.map((job: any) => (
+            <View key={job._id} style={styles.scheduleRow}>
+              <View style={styles.scheduleDot} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.scheduleText}>{job.serviceName} - {job.petId?.name}</Text>
+                <Text style={styles.scheduleSub}>{job.appointmentDate} • {job.appointmentTime}</Text>
+              </View>
+              <TouchableOpacity style={styles.jobVerifyBtn} onPress={() => onCompleteJob(job._id)}>
+                <Text style={styles.jobVerifyText}>Complete</Text>
+              </TouchableOpacity>
             </View>
+          ))
+        ) : (
+          <View style={styles.emptyInline}>
+            <Text style={styles.emptyInlineText}>Your schedule is empty.</Text>
+          </View>
+        )}
+      </View>
+
+      {/* Reviews */}
+      <View style={{ marginTop: 24, marginBottom: 20 }}>
+        <Text style={styles.sectionTitle}>Recent Reviews</Text>
+        {reviews && reviews.length > 0 ? (
+          reviews.slice(0, 3).map((review: any) => (
+            <View key={review._id} style={styles.reviewMiniCard}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
+                <Text style={styles.reviewUser}>{review.user?.fullName || 'Customer'}</Text>
+                <View style={{ flexDirection: 'row', gap: 2 }}>
+                  {[...Array(5)].map((_, i) => (
+                    <Ionicons key={i} name={i < review.rating ? "star" : "star-outline"} size={10} color="#FFD166" />
+                  ))}
+                </View>
+              </View>
+              <Text style={styles.reviewContent} numberOfLines={2}>{review.content}</Text>
+            </View>
+          ))
+        ) : (
+          <View style={styles.emptyInline}>
+            <Text style={styles.emptyInlineText}>No reviews yet.</Text>
+          </View>
+        )}
+      </View>
+
+      {/* Notification Modal */}
+      <Modal visible={showNotifications} animationType="slide" transparent={true}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.notificationModal}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Notifications</Text>
+              <TouchableOpacity onPress={() => setShowNotifications(false)}>
+                <Ionicons name="close" size={24} color="#1A3B2F" />
+              </TouchableOpacity>
+            </View>
+            <ScrollView style={styles.notificationList}>
+              {notifications.length > 0 ? (
+                notifications.map((notif: any) => (
+                  <View key={notif._id} style={styles.notificationItem}>
+                    <View style={styles.notifText}>
+                      <Text style={styles.notifTitle}>{notif.title}</Text>
+                      <Text style={styles.notifMessage}>{notif.message}</Text>
+                    </View>
+                  </View>
+                ))
+              ) : (
+                <Text style={{ textAlign: 'center', color: '#999', marginTop: 20 }}>No notifications</Text>
+              )}
+            </ScrollView>
           </View>
         </View>
-      ))}
-    </View>
+      </Modal>
     </ScrollView>
   );
 };
@@ -403,6 +410,10 @@ export default function DashboardScreen() {
   const [customerAppointments, setCustomerAppointments] = useState<any[]>([]);
   const [adminStats, setAdminStats] = useState<any>(null);
   const [notifications, setNotifications] = useState<any[]>([]);
+  const [groomerAvailableJobs, setGroomerAvailableJobs] = useState<any[]>([]);
+  const [groomerSchedule, setGroomerSchedule] = useState<any[]>([]);
+  const [groomerReviews, setGroomerReviews] = useState<any[]>([]);
+  const [availableGroomers, setAvailableGroomers] = useState<any[]>([]);
   const { openSidebar } = useSidebar();
   const router = useRouter();
 
@@ -446,10 +457,30 @@ export default function DashboardScreen() {
                 const notifData = await notifRes.json();
                 setNotifications(notifData);
               }
+
+              // Fetch jobs and schedule for groomer
+              const jobsRes = await fetch(`${API_BASE_URL}/spa-services/bookings`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+              });
+              if (jobsRes.ok) {
+                const jobsData = await jobsRes.json();
+                setGroomerAvailableJobs(jobsData.filter((b: any) => b.status === 'Confirmed'));
+                setGroomerSchedule(jobsData.filter((b: any) => b.status === 'Accepted'));
+              }
+
+              // Fetch reviews for groomer
+              const reviewsRes = await fetch(`${API_BASE_URL}/admin/reviews`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+              });
+              if (reviewsRes.ok) {
+                const reviewsData = await reviewsRes.json();
+                setGroomerReviews(reviewsData);
+              }
             } else if (parsedUser.role === 'customer' && token) {
-              const [statsRes, bookingsRes] = await Promise.all([
+              const [statsRes, bookingsRes, groomersRes] = await Promise.all([
                 fetch(`${API_BASE_URL}/auth/dashboard-stats`, { headers: { 'Authorization': `Bearer ${token}` } }),
-                fetch(`${API_BASE_URL}/spa-services/bookings`, { headers: { 'Authorization': `Bearer ${token}` } })
+                fetch(`${API_BASE_URL}/spa-services/bookings`, { headers: { 'Authorization': `Bearer ${token}` } }),
+                fetch(`${API_BASE_URL}/spa-services/groomers`, { headers: { 'Authorization': `Bearer ${token}` } })
               ]);
               if (statsRes.ok) {
                 const statsData = await statsRes.json();
@@ -458,6 +489,10 @@ export default function DashboardScreen() {
               if (bookingsRes.ok) {
                 const bookingsData = await bookingsRes.json();
                 setCustomerAppointments(bookingsData.slice(0, 3)); // show top 3
+              }
+              if (groomersRes.ok) {
+                const groomersData = await groomersRes.json();
+                setAvailableGroomers(groomersData);
               }
             } else if (parsedUser.role === 'admin' && token) {
               const statsRes = await fetch(`${API_BASE_URL}/admin/dashboard-stats`, {
@@ -541,6 +576,44 @@ export default function DashboardScreen() {
             router={router}
             notifications={notifications}
             onMarkAsRead={markNotificationsRead}
+            availableJobs={groomerAvailableJobs}
+            mySchedule={groomerSchedule}
+            reviews={groomerReviews}
+            onAcceptJob={async (id: string) => {
+              try {
+                const token = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
+                const response = await fetch(`${API_BASE_URL}/spa-services/bookings/${id}/accept`, {
+                  method: 'PUT',
+                  headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (response.ok) {
+                  Alert.alert("Success", "Appointment accepted!");
+                  const job = groomerAvailableJobs.find(j => j._id === id);
+                  if (job) {
+                    setGroomerAvailableJobs(prev => prev.filter(j => j._id !== id));
+                    setGroomerSchedule(prev => [...prev, { ...job, status: 'Accepted' }]);
+                  }
+                }
+              } catch (error) {
+                Alert.alert("Error", "Could not accept appointment.");
+              }
+            }}
+            onCompleteJob={async (id: string) => {
+              try {
+                const token = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
+                const response = await fetch(`${API_BASE_URL}/spa-services/bookings/${id}/complete`, {
+                  method: 'PUT',
+                  headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (response.ok) {
+                  Alert.alert("Success", "Job marked as completed!");
+                  setGroomerSchedule(prev => prev.filter(j => j._id !== id));
+                  // Refresh stats
+                }
+              } catch (error) {
+                Alert.alert("Error", "Could not complete job.");
+              }
+            }}
           />
         ) : (
           <CustomerDashboardContent 
@@ -553,6 +626,7 @@ export default function DashboardScreen() {
             stats={customerStats}
             appointments={customerAppointments}
             router={router}
+            availableGroomers={availableGroomers}
           />
         )}
       </SafeAreaView>
@@ -576,14 +650,17 @@ const styles = StyleSheet.create({
   },
   managementGrid: {
     flexDirection: 'row',
-    gap: 16,
+    flexWrap: 'wrap',
+    gap: 8,
     marginTop: 12,
+    justifyContent: 'flex-start',
   },
   managementCard: {
-    flex: 1,
+    width: '31.5%',
     backgroundColor: '#ffffff',
-    borderRadius: 24,
-    padding: 20,
+    borderRadius: 20,
+    paddingVertical: 14,
+    paddingHorizontal: 4,
     alignItems: 'center',
     borderWidth: 1,
     borderColor: 'rgba(26, 59, 47, 0.08)',
@@ -592,19 +669,22 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.02,
     shadowRadius: 10,
     elevation: 2,
+    marginBottom: 8,
   },
   managementIconContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: 18,
+    width: 48,
+    height: 48,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   managementLabel: {
-    fontSize: 14,
+    fontSize: 10,
     fontWeight: '800',
     color: '#1A3B2F',
+    textAlign: 'center',
+    lineHeight: 12,
   },
   header: {
     flexDirection: 'row',
@@ -863,87 +943,93 @@ const styles = StyleSheet.create({
     color: 'rgba(26, 59, 47, 0.5)',
     fontWeight: '800',
   },
-  manageSection: {
-    marginTop: 8,
-  },
-  manageActionCard: {
-    flex: 1,
-    backgroundColor: '#ffffff',
-    borderRadius: 20,
+  // Groomer Central Styles
+  jobCard: {
+    backgroundColor: '#fff',
+    borderRadius: 24,
     padding: 16,
+    marginBottom: 12,
     borderWidth: 1,
     borderColor: 'rgba(26, 59, 47, 0.05)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.02,
+    shadowRadius: 10,
+    elevation: 2,
   },
-  manageActionIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 12,
-  },
-  actionTitle: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: '#1A3B2F',
-  },
-  actionCards: {
-    flexDirection: 'row',
-    gap: 16,
-  },
-  scheduleList: {
-    marginTop: 24,
-  },
-  scheduleCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#ffffff',
+  jobInfo: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  jobAvatar: { width: 44, height: 44, borderRadius: 12, backgroundColor: '#F0FAF5', alignItems: 'center', justifyContent: 'center' },
+  jobPetName: { fontSize: 16, fontWeight: '800', color: '#1A3B2F' },
+  jobService: { fontSize: 12, color: '#666', marginTop: 2 },
+  jobAcceptBtn: { backgroundColor: '#1A3B2F', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 10 },
+  jobAcceptText: { color: '#FFD166', fontSize: 12, fontWeight: '800' },
+  jobFooter: { flexDirection: 'row', marginTop: 12, gap: 16, borderTopWidth: 1, borderTopColor: '#f0f0f0', paddingTop: 8 },
+  jobMeta: { fontSize: 11, color: '#999', fontWeight: '600' },
+  
+  scheduleRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', padding: 16, borderRadius: 18, marginBottom: 10, gap: 12, borderWidth: 1, borderColor: '#eee' },
+  scheduleDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#FFD166' },
+  scheduleText: { fontSize: 14, fontWeight: '800', color: '#1A3B2F' },
+  scheduleSub: { fontSize: 11, color: '#999', marginTop: 2 },
+  scheduleStatus: { backgroundColor: '#E8F5E9', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
+  scheduleStatusText: { fontSize: 9, fontWeight: '900', color: '#2E7D32' },
+  
+  reviewMiniCard: { backgroundColor: '#fff', padding: 12, borderRadius: 16, marginBottom: 8, borderWidth: 1, borderColor: '#eee' },
+  reviewUser: { fontSize: 12, fontWeight: '800', color: '#1A3B2F' },
+  reviewContent: { fontSize: 11, color: '#666', marginTop: 4, lineHeight: 16 },
+  
+  emptyInline: { padding: 20, alignItems: 'center', backgroundColor: 'rgba(26, 59, 47, 0.03)', borderRadius: 16 },
+  emptyInlineText: { fontSize: 13, color: '#999', fontWeight: '600' },
+
+  // New Groomer Slider Styles
+  groomerCardSmall: {
+    width: 100,
+    backgroundColor: '#fff',
+    borderRadius: 20,
     padding: 12,
-    borderRadius: 18,
-    marginBottom: 12,
+    alignItems: 'center',
     borderWidth: 1,
     borderColor: 'rgba(26, 59, 47, 0.05)',
   },
-  petAvatarSmall: {
-    width: 48,
-    height: 48,
-    borderRadius: 14,
+  groomerAvatarSmall: {
+    width: 60,
+    height: 60,
+    borderRadius: 20,
     backgroundColor: '#F0FAF5',
+    marginBottom: 8,
+    overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  scheduleInfo: {
-    flex: 1,
-    marginLeft: 12,
+  groomerImgSmall: {
+    width: '100%',
+    height: '100%',
   },
-  petNameText: {
-    fontSize: 15,
+  groomerNameSmall: {
+    fontSize: 12,
     fontWeight: '800',
     color: '#1A3B2F',
+    textAlign: 'center',
   },
-  petBreedText: {
-    fontSize: 12,
-    color: 'rgba(26, 59, 47, 0.5)',
-    fontWeight: '600',
-  },
-  scheduleTimeStatus: {
-    alignItems: 'flex-end',
-  },
-  scheduleTimeText: {
-    fontSize: 13,
+  groomerSpecSmall: {
+    fontSize: 9,
+    color: '#999',
     fontWeight: '700',
-    color: '#1A3B2F',
-    marginBottom: 4,
+    textAlign: 'center',
+    marginTop: 2,
   },
-  statusBadgeSmall: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
+  jobVerifyBtn: {
+    backgroundColor: '#FFD166',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 10,
   },
-  statusBadgeTextSmall: {
-    fontSize: 10,
+  jobVerifyText: {
+    fontSize: 11,
     fontWeight: '900',
+    color: '#1A3B2F',
   },
+
+
   statsGrid: {
     marginBottom: 8,
   },

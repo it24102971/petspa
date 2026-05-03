@@ -135,38 +135,15 @@ export default function CafeScreen() {
     const emoji = getItemEmoji(item.name, item.category);
     const inCart = inCartItem(item._id);
     return (
-      <TouchableOpacity style={styles.listRow} onPress={() => setDetailItem(item)} activeOpacity={0.7}>
-        {/* Icon box */}
-        <View style={styles.iconBox}>
-          {item.imageUrl ? (
-            <Image source={{ uri: getImageUrl(item.imageUrl) }} style={styles.iconBoxImage} resizeMode="cover" />
-          ) : (
-            <Text style={styles.iconBoxEmoji}>{emoji}</Text>
-          )}
+      <TouchableOpacity style={styles.gridCard} onPress={() => setDetailItem(item)} activeOpacity={0.7}>
+        <View style={styles.gridInfo}>
+          <Text style={[styles.gridName, { flex: 1 }]}>{emoji} {item.name}</Text>
+          <Text style={styles.gridPrice}>Rs. {item.price}</Text>
         </View>
-
-        {/* Info */}
-        <View style={styles.listInfo}>
-          <Text style={styles.listName}>{item.name}</Text>
-          <Text style={styles.listPrice}>Rs. {item.price}</Text>
-        </View>
-
-        {/* Qty controls or chevron */}
-        {inCart ? (
-          <View style={styles.inlineQty}>
-            <TouchableOpacity style={styles.qtyBtn} onPress={() => {
-              if (inCart.quantity === 1) removeFromCart(item._id);
-              else updateQty(item._id, -1);
-            }}>
-              <Ionicons name="remove" size={20} color="#1A3B2F" />
-            </TouchableOpacity>
-            <Text style={styles.qtyNum}>{inCart.quantity}</Text>
-            <TouchableOpacity style={[styles.qtyBtn, { backgroundColor: '#FFD166' }]} onPress={() => addToCart(item)}>
-              <Ionicons name="add" size={20} color="#1A3B2F" />
-            </TouchableOpacity>
+        {inCart && (
+          <View style={styles.gridBadge}>
+            <Text style={styles.gridBadgeText}>{inCart.quantity}</Text>
           </View>
-        ) : (
-          <Ionicons name="chevron-forward" size={24} color="#bbb" />
         )}
       </TouchableOpacity>
     );
@@ -390,7 +367,51 @@ const styles = StyleSheet.create({
   list: { paddingHorizontal: 16, paddingBottom: 120 },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40 },
 
-  // List Row — all qty buttons fixed to 40×40
+  // Grid items
+  gridWrapper: { justifyContent: 'flex-start', gap: 10 },
+  gridCard: {
+    width: '100%',
+    backgroundColor: '#fff',
+    borderRadius: 18,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 2,
+    position: 'relative',
+  },
+  gridIconBox: {
+    width: '100%',
+    aspectRatio: 1,
+    borderRadius: 16,
+    backgroundColor: '#F0FAF5',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  gridImage: { width: '100%', height: '100%' },
+  gridEmoji: { fontSize: 32 },
+  gridInfo: { flex: 1, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  gridName: { fontSize: 16, fontWeight: '800', color: '#1A3B2F' },
+  gridPrice: { fontSize: 14, fontWeight: '700', color: '#888' },
+  gridBadge: {
+    backgroundColor: '#FFD166',
+    borderRadius: 12,
+    minWidth: 24,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 12,
+  },
+  gridBadgeText: { fontSize: 10, fontWeight: '900', color: '#1A3B2F' },
+
+  // List Row (legacy/other)
   listRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 18, padding: 14, marginBottom: 12, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 4, elevation: 2 },
   iconBox: { width: 60, height: 60, borderRadius: 16, backgroundColor: '#F0FAF5', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   iconBoxImage: { width: 60, height: 60 },

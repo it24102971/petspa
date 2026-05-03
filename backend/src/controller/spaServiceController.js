@@ -130,3 +130,32 @@ export const verifyBooking = async (req, res) => {
     res.status(500).json({ message: "Error verifying booking", error: error.message });
   }
 };
+// Complete a booking
+export const completeBooking = async (req, res) => {
+  try {
+    const booking = await SpaBooking.findByIdAndUpdate(
+      req.params.id,
+      { status: "Completed" },
+      { new: true }
+    );
+    if (!booking) return res.status(404).json({ message: "Booking not found" });
+    res.status(200).json(booking);
+  } catch (error) {
+    res.status(500).json({ message: "Error completing booking", error: error.message });
+  }
+};
+
+// Accept a booking (by groomer)
+export const acceptBooking = async (req, res) => {
+  try {
+    const booking = await SpaBooking.findByIdAndUpdate(
+      req.params.id,
+      { status: "Accepted", groomerId: req.user._id, groomerName: req.user.fullName },
+      { new: true }
+    );
+    if (!booking) return res.status(404).json({ message: "Booking not found" });
+    res.status(200).json(booking);
+  } catch (error) {
+    res.status(500).json({ message: "Error accepting booking", error: error.message });
+  }
+};
