@@ -90,6 +90,13 @@ const CustomerDashboardContent = ({ user, stats, router, appointments, onOpenSid
 
     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
       <Text style={[styles.sectionTitle, { marginBottom: 0 }]}>Recent Appointments</Text>
+      <Pressable 
+        style={{ backgroundColor: '#1A3B2F', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12, flexDirection: 'row', alignItems: 'center', gap: 6 }}
+        onPress={() => router.push({ pathname: '/(tabs)/appointments', params: { view: 'book' } } as any)}
+      >
+        <Ionicons name="add" size={18} color="#FFD166" />
+        <Text style={{ color: '#fff', fontWeight: '800', fontSize: 13 }}>Book New</Text>
+      </Pressable>
     </View>
 
     {appointments && appointments.length > 0 ? (
@@ -121,10 +128,14 @@ const CustomerDashboardContent = ({ user, stats, router, appointments, onOpenSid
   </ScrollView>
 );
 
-const GroomerDashboardContent = ({ user, stats, router, notifications, onMarkAsRead, availableJobs, mySchedule, reviews, onAcceptJob, onCompleteJob, onOpenSidebar }: any) => {
-  const unreadCount = notifications.filter((n: any) => !n.isRead).length;
-  const [showNotifications, setShowNotifications] = useState(false);
+const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
+  Pending:   { bg: '#E8F4FF', text: '#1565C0' },
+  Confirmed: { bg: '#E8F5E9', text: '#2E7D32' },
+  Accepted:  { bg: '#FFF8E1', text: '#F57F17' },
+  Completed: { bg: '#F3E5F5', text: '#6A1B9A' },
+};
 
+const GroomerDashboardContent = ({ user, stats, router, notifications, onMarkAsRead, availableJobs, mySchedule, reviews, onAcceptJob, onCompleteJob, onOpenSidebar, onLogout }: any) => {
   return (
     <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
       {/* Header */}
@@ -133,142 +144,120 @@ const GroomerDashboardContent = ({ user, stats, router, notifications, onMarkAsR
           <Pressable onPress={onOpenSidebar} style={styles.menuButton} hitSlop={15}>
             <Ionicons name="menu-outline" size={28} color="#1A3B2F" />
           </Pressable>
-          <Text style={styles.dashboardTitle}>Groomer Central</Text>
+          <Text style={styles.dashboardTitle}>Dashboard</Text>
         </View>
-        <Pressable 
-          style={styles.notificationButton} 
-          onPress={() => { setShowNotifications(true); onMarkAsRead(); }}
-        >
-          <Ionicons name="notifications-outline" size={24} color="#1A3B2F" />
-          {unreadCount > 0 && <View style={styles.notificationBadge} />}
+      </View>
+
+      {/* Welcome Card */}
+      <View style={styles.welcomeCardMain}>
+        <View style={styles.welcomeAvatarContainer}>
+          {user?.profilePicture ? (
+            <Image source={{ uri: getImageUrl(user.profilePicture) || '' }} style={styles.welcomeAvatar} />
+          ) : (
+            <View style={styles.avatarPlaceholderLarge}>
+              <Ionicons name="person" size={40} color="#1A3B2F" />
+            </View>
+          )}
+        </View>
+        <View style={{ flex: 1, paddingLeft: 10 }}>
+          <Text style={styles.helloTitleText}>Hello, {user?.fullName?.split(' ')[0] || 'Sithumi'}! 👋</Text>
+          <Text style={styles.helloSubtitleText}>Welcome back to your dashboard</Text>
+        </View>
+      </View>
+
+      {/* Stats Grid */}
+      <View style={styles.groomerStatsRow}>
+        <View style={[styles.statItemCard, { backgroundColor: '#ffffff' }]}>
+          <View style={styles.statItemTop}>
+            <Text style={styles.statItemValue}>{stats?.avgRating || '4.8'}</Text>
+            <Ionicons name="star" size={20} color="#FFD166" />
+          </View>
+          <Text style={styles.statItemLabel}>Average Rating</Text>
+        </View>
+        <View style={[styles.statItemCard, { backgroundColor: '#F3F0FF' }]}>
+          <View style={styles.statItemTop}>
+            <Text style={styles.statItemValue}>{stats?.totalReviews || '12'}</Text>
+          </View>
+          <Text style={styles.statItemLabel}>Total Reviews</Text>
+        </View>
+      </View>
+
+      <View style={styles.groomerStatsRow}>
+        <View style={[styles.statItemCard, { backgroundColor: '#F0FAF5' }]}>
+          <View style={styles.statItemTop}>
+            <Text style={styles.statItemValue}>{mySchedule?.length || '5'}</Text>
+            <Ionicons name="calendar" size={20} color="#43A047" />
+          </View>
+          <Text style={styles.statItemLabel}>Today's Appointments</Text>
+        </View>
+        <View style={[styles.statItemCard, { backgroundColor: '#E3F2FD' }]}>
+          <View style={styles.statItemTop}>
+            <Text style={styles.statItemValue}>{stats?.completedJobs || '32'}</Text>
+            <Ionicons name="checkmark-circle" size={20} color="#1E88E5" />
+          </View>
+          <Text style={styles.statItemLabel}>Completed Jobs</Text>
+        </View>
+      </View>
+
+      {/* Today's Schedule Section */}
+      <View style={styles.groomerSectionHeader}>
+        <Text style={styles.sectionHeading}>Today's Schedule</Text>
+        <Pressable onPress={() => router.push('/groomer/appointments')}>
+          <Text style={styles.viewAllLabel}>View All</Text>
         </Pressable>
       </View>
 
-      {/* Stats Row */}
-      <View style={styles.statsRow}>
-        <View style={styles.statBox}>
-          <View style={styles.statBoxHeader}>
-            <Text style={styles.statBoxNumber}>{stats?.todayCount || 0}</Text>
-            <Ionicons name="calendar" size={20} color="#FFD166" />
-          </View>
-          <Text style={styles.statBoxLabel}>Today's Jobs</Text>
-        </View>
-        <View style={styles.statBox}>
-          <View style={styles.statBoxHeader}>
-            <Text style={styles.statBoxNumber}>{availableJobs?.length || 0}</Text>
-            <Ionicons name="briefcase" size={20} color="#2196F3" />
-          </View>
-          <Text style={styles.statBoxLabel}>New Jobs</Text>
-        </View>
-      </View>
-
-      {/* Available Jobs - Slider Bar */}
-      <View style={{ marginTop: 24 }}>
-        <Text style={styles.sectionTitle}>Available Jobs</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingBottom: 10 }}>
-          {availableJobs && availableJobs.length > 0 ? (
-            availableJobs.map((job: any) => (
-              <View key={job._id} style={[styles.jobCard, { width: 260, marginBottom: 0 }]}>
-                <View style={styles.jobInfo}>
-                  <View style={styles.jobAvatar}>
-                    <Ionicons name="paw" size={24} color="#1A3B2F" />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.jobPetName}>{job.petId?.name || 'Pet'}</Text>
-                    <Text style={styles.jobService} numberOfLines={1}>{job.serviceName}</Text>
-                  </View>
-                  <TouchableOpacity style={styles.jobAcceptBtn} onPress={() => onAcceptJob(job._id)}>
-                    <Text style={styles.jobAcceptText}>Accept</Text>
-                  </TouchableOpacity>
-                </View>
-                <View style={styles.jobFooter}>
-                  <Text style={styles.jobMeta}><Ionicons name="time-outline" size={12}/> {job.appointmentDate} at {job.appointmentTime}</Text>
-                  <Text style={styles.jobMeta}><Ionicons name="cash-outline" size={12}/> Rs. {job.price}</Text>
-                </View>
+      {mySchedule && mySchedule.length > 0 ? (
+        mySchedule.slice(0, 5).map((job: any) => {
+          const sc = STATUS_COLORS[job.status] || STATUS_COLORS.Pending;
+          return (
+            <View key={job._id} style={styles.scheduleRowCard}>
+              <View style={styles.petIconBackground}>
+                <Ionicons name="paw" size={24} color="#1A3B2F" />
               </View>
-            ))
-          ) : (
-            <View style={[styles.emptyInline, { width: width - 48 }]}>
-              <Text style={styles.emptyInlineText}>No new jobs available right now.</Text>
-            </View>
-          )}
-        </ScrollView>
-      </View>
-
-      {/* My Schedule */}
-      <View style={{ marginTop: 24 }}>
-        <Text style={styles.sectionTitle}>My Schedule</Text>
-        {mySchedule && mySchedule.length > 0 ? (
-          mySchedule.map((job: any) => (
-            <View key={job._id} style={styles.scheduleRow}>
-              <View style={styles.scheduleDot} />
               <View style={{ flex: 1 }}>
-                <Text style={styles.scheduleText}>{job.serviceName} - {job.petId?.name}</Text>
-                <Text style={styles.scheduleSub}>{job.appointmentDate} • {job.appointmentTime}</Text>
+                <Text style={styles.schedulePetName}>{job.petId?.name || 'Buddy'}</Text>
+                <Text style={styles.schedulePetBreed}>{job.petId?.breed || job.serviceName || 'Golden Retriever'}</Text>
               </View>
-              <TouchableOpacity style={styles.jobVerifyBtn} onPress={() => onCompleteJob(job._id)}>
-                <Text style={styles.jobVerifyText}>Complete</Text>
-              </TouchableOpacity>
-            </View>
-          ))
-        ) : (
-          <View style={styles.emptyInline}>
-            <Text style={styles.emptyInlineText}>Your schedule is empty.</Text>
-          </View>
-        )}
-      </View>
-
-      {/* Reviews */}
-      <View style={{ marginTop: 24, marginBottom: 20 }}>
-        <Text style={styles.sectionTitle}>Recent Reviews</Text>
-        {reviews && reviews.length > 0 ? (
-          reviews.slice(0, 3).map((review: any) => (
-            <View key={review._id} style={styles.reviewMiniCard}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
-                <Text style={styles.reviewUser}>{review.user?.fullName || 'Customer'}</Text>
-                <View style={{ flexDirection: 'row', gap: 2 }}>
-                  {[...Array(5)].map((_, i) => (
-                    <Ionicons key={i} name={i < review.rating ? "star" : "star-outline"} size={10} color="#FFD166" />
-                  ))}
+              <View style={{ alignItems: 'flex-end' }}>
+                <Text style={styles.scheduleTime}>{job.appointmentTime || '10:00 AM'}</Text>
+                <View style={[styles.statusBadgeCapsule, { backgroundColor: sc.bg }]}>
+                  <Text style={[styles.statusBadgeText, { color: sc.text }]}>{job.status}</Text>
                 </View>
               </View>
-              <Text style={styles.reviewContent} numberOfLines={2}>{review.content}</Text>
             </View>
-          ))
-        ) : (
-          <View style={styles.emptyInline}>
-            <Text style={styles.emptyInlineText}>No reviews yet.</Text>
-          </View>
-        )}
-      </View>
+          );
+        })
+      ) : (
+        <View style={styles.emptyStateCard}>
+          <Ionicons name="calendar-outline" size={40} color="#ccc" />
+          <Text style={styles.emptyStateLabel}>No appointments for today</Text>
+        </View>
+      )}
 
-      {/* Notification Modal */}
-      <Modal visible={showNotifications} animationType="slide" transparent={true}>
-        <View style={styles.modalOverlay}>
-          <View style={styles.notificationModal}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Notifications</Text>
-              <TouchableOpacity onPress={() => setShowNotifications(false)}>
-                <Ionicons name="close" size={24} color="#1A3B2F" />
+      {/* Available Jobs (Hidden if empty, but good to keep) */}
+      {availableJobs && availableJobs.length > 0 && (
+        <View style={{ marginTop: 24 }}>
+          <Text style={styles.sectionHeading}>Available Jobs</Text>
+          {availableJobs.map((job: any) => (
+            <View key={job._id} style={styles.availableJobCard}>
+              <View style={styles.petIconBackground}>
+                <Ionicons name="briefcase-outline" size={22} color="#1A3B2F" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.schedulePetName}>{job.serviceName || 'Service'}</Text>
+                <Text style={styles.schedulePetBreed}>{job.appointmentDate} · {job.appointmentTime}</Text>
+                <Text style={styles.jobPriceValue}>Rs. {job.price}</Text>
+              </View>
+              <TouchableOpacity style={styles.acceptActionBtn} onPress={() => onAcceptJob(job._id)}>
+                <Text style={styles.acceptActionText}>Accept</Text>
               </TouchableOpacity>
             </View>
-            <ScrollView style={styles.notificationList}>
-              {notifications.length > 0 ? (
-                notifications.map((notif: any) => (
-                  <View key={notif._id} style={styles.notificationItem}>
-                    <View style={styles.notifText}>
-                      <Text style={styles.notifTitle}>{notif.title}</Text>
-                      <Text style={styles.notifMessage}>{notif.message}</Text>
-                    </View>
-                  </View>
-                ))
-              ) : (
-                <Text style={{ textAlign: 'center', color: '#999', marginTop: 20 }}>No notifications</Text>
-              )}
-            </ScrollView>
-          </View>
+          ))}
         </View>
-      </Modal>
+      )}
+
+      <View style={{ height: 40 }} />
     </ScrollView>
   );
 };
@@ -414,6 +403,7 @@ export default function DashboardScreen() {
   const [groomerSchedule, setGroomerSchedule] = useState<any[]>([]);
   const [groomerReviews, setGroomerReviews] = useState<any[]>([]);
   const [availableGroomers, setAvailableGroomers] = useState<any[]>([]);
+  const [diaryEntries, setDiaryEntries] = useState<any[]>([]);
   const { openSidebar } = useSidebar();
   const router = useRouter();
 
@@ -475,6 +465,14 @@ export default function DashboardScreen() {
               if (reviewsRes.ok) {
                 const reviewsData = await reviewsRes.json();
                 setGroomerReviews(reviewsData);
+              }
+
+              // Fetch diary feed
+              const diaryRes = await fetch(`${API_BASE_URL}/diary/feed`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+              });
+              if (diaryRes.ok) {
+                setDiaryEntries(await diaryRes.json());
               }
             } else if (parsedUser.role === 'customer' && token) {
               const [statsRes, bookingsRes, groomersRes] = await Promise.all([
@@ -1144,5 +1142,198 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#999',
     fontWeight: '600',
+  },
+  // Groomer Dashboard New Styles
+
+  // --- Restored Premium Groomer Dashboard Styles ---
+  welcomeCardMain: {
+    backgroundColor: '#ffffff',
+    borderRadius: 32,
+    padding: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: 'rgba(26,59,47,0.03)',
+  },
+  welcomeAvatarContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#F0FAF5',
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: '#ffffff',
+  },
+  welcomeAvatar: {
+    width: '100%',
+    height: '100%',
+  },
+  avatarPlaceholderLarge: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  helloTitleText: {
+    fontSize: 24,
+    fontWeight: '900',
+    color: '#1A3B2F',
+    letterSpacing: -0.5,
+  },
+  helloSubtitleText: {
+    fontSize: 14,
+    color: 'rgba(26,59,47,0.5)',
+    fontWeight: '500',
+    marginTop: 4,
+  },
+  groomerStatsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  statItemCard: {
+    width: '48%',
+    borderRadius: 28,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.03,
+    shadowRadius: 5,
+    elevation: 1,
+    borderWidth: 1,
+    borderColor: 'rgba(26,59,47,0.02)',
+  },
+  statItemTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  statItemValue: {
+    fontSize: 28,
+    fontWeight: '900',
+    color: '#1A3B2F',
+  },
+  statItemLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: 'rgba(26,59,47,0.4)',
+  },
+  groomerSectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 10,
+    marginBottom: 16,
+  },
+  sectionHeading: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: '#1A3B2F',
+    letterSpacing: -0.5,
+  },
+  viewAllLabel: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#FFD166',
+  },
+  scheduleRowCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 28,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.03,
+    shadowRadius: 6,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: 'rgba(26,59,47,0.03)',
+  },
+  petIconBackground: {
+    width: 60,
+    height: 60,
+    borderRadius: 20,
+    backgroundColor: '#F0FAF5',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 16,
+  },
+  schedulePetName: {
+    fontSize: 17,
+    fontWeight: '900',
+    color: '#1A3B2F',
+  },
+  schedulePetBreed: {
+    fontSize: 13,
+    color: 'rgba(26,59,47,0.4)',
+    fontWeight: '600',
+    marginTop: 2,
+  },
+  scheduleTime: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#1A3B2F',
+    marginBottom: 6,
+  },
+  statusBadgeCapsule: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 10,
+  },
+  statusBadgeText: {
+    fontSize: 11,
+    fontWeight: '900',
+    textTransform: 'capitalize',
+  },
+  emptyStateCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 28,
+    padding: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderStyle: 'dashed',
+    borderWidth: 1,
+    borderColor: 'rgba(26,59,47,0.1)',
+  },
+  emptyStateLabel: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: 'rgba(26,59,47,0.4)',
+    marginTop: 12,
+  },
+  availableJobCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 28,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(26,59,47,0.05)',
+  },
+  jobPriceValue: {
+    fontSize: 14,
+    fontWeight: '900',
+    color: '#43A047',
+    marginTop: 4,
+  },
+  acceptActionBtn: {
+    backgroundColor: '#F0FAF5',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 14,
+  },
+  acceptActionText: {
+    color: '#1A3B2F',
+    fontWeight: '900',
+    fontSize: 13,
   },
 });

@@ -135,6 +135,13 @@ const Sidebar = ({ isVisible, onClose }: SidebarProps) => {
             />
             {user?.role === 'customer' && (
               <SidebarItem
+                icon="add-circle-outline"
+                label="Book Appointment"
+                onPress={() => handleNavigate('/(tabs)/appointments?view=book')}
+              />
+            )}
+            {user?.role === 'customer' && (
+              <SidebarItem
                 icon="search-outline"
                 label="Explore"
                 onPress={() => handleNavigate('/(tabs)/explore')}
@@ -151,7 +158,7 @@ const Sidebar = ({ isVisible, onClose }: SidebarProps) => {
               <SidebarItem
                 icon="calendar-outline"
                 label="My Appointments"
-                onPress={() => handleNavigate('/(tabs)/appointments')}
+                onPress={() => handleNavigate('/groomer/appointments')}
               />
             )}
             {user?.role === 'customer' && (

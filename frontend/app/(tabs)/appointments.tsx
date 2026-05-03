@@ -40,11 +40,12 @@ interface Booking {
 
 export default function AppointmentsScreen() {
   const router = useRouter();
-  const { filter } = useLocalSearchParams<{ filter?: string }>();
+  const params = useLocalSearchParams<{ filter?: string; view?: string }>();
+  const { filter } = params;
   const [activeFilter, setActiveFilter] = useState('All');
   const [appointments, setAppointments] = useState<Booking[]>([]);
   const { openSidebar } = useSidebar();
-  const filters = ['All', 'Pending', 'Confirmed', 'Completed'];
+  const filters = ['All', 'Pending', 'Confirmed', 'Accepted', 'Completed'];
 
   useEffect(() => {
     if (filter && filters.includes(filter)) {
@@ -81,6 +82,12 @@ export default function AppointmentsScreen() {
     fetchAppointments();
     fetchBookingData();
   }, []);
+
+  useEffect(() => {
+    if (params.view === 'book') {
+      setViewMode('book');
+    }
+  }, [params.view]);
 
   const fetchAppointments = async () => {
     try {
@@ -361,15 +368,22 @@ export default function AppointmentsScreen() {
       <StatusBar style="dark" />
       
       {/* Header */}
-      <View style={styles.header}>
-        <Pressable onPress={openSidebar} style={styles.headerButton} hitSlop={15}>
-          <Ionicons name="menu-outline" size={28} color="#1A3B2F" />
-        </Pressable>
-        <Text style={styles.headerTitle}>Appointments</Text>
-        <Pressable style={styles.headerButton}>
-          <Ionicons name="notifications-outline" size={24} color="#1A3B2F" />
-        </Pressable>
-      </View>
+        <View style={styles.header}>
+          <Pressable onPress={openSidebar} style={styles.headerButton} hitSlop={15}>
+            <Ionicons name="menu-outline" size={28} color="#1A3B2F" />
+          </Pressable>
+          <Text style={styles.headerTitle}>Appointments</Text>
+          <View style={{ flexDirection: 'row' }}>
+            {userRole !== 'admin' && userRole !== 'groomer' && (
+              <Pressable onPress={() => setViewMode('book')} style={styles.headerButton}>
+                <Ionicons name="add-circle" size={28} color="#FFD166" />
+              </Pressable>
+            )}
+            <Pressable style={styles.headerButton}>
+              <Ionicons name="notifications-outline" size={24} color="#1A3B2F" />
+            </Pressable>
+          </View>
+        </View>
 
       {/* Filters */}
       <View style={styles.filterContainer}>
