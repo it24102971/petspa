@@ -3,6 +3,7 @@ import { protect, adminOnly } from "../middleware/authMiddleware.js";
 import upload from "../middleware/uploadMiddleware.js";
 import {
   getServices,
+  getAvailableGroomers,
   createService,
   updateService,
   deleteService,
@@ -14,6 +15,7 @@ import {
 const router = express.Router();
 
 router.get("/", getServices);
+router.get("/groomers", getAvailableGroomers);
 router.post("/", protect, adminOnly, createService);
 router.put("/:id", protect, adminOnly, updateService);
 router.delete("/:id", protect, adminOnly, deleteService);

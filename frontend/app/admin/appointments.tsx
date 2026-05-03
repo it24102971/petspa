@@ -19,7 +19,14 @@ interface Booking {
     _id: string;
     name: string;
   };
-  serviceName: string;
+  serviceName?: string;
+  groomerId?: {
+    _id: string;
+    fullName: string;
+  };
+  groomerName?: string;
+  appointmentDate: string;
+  appointmentTime: string;
   price: number;
   status: string;
   paymentSlip: string;
@@ -92,9 +99,10 @@ export default function AdminAppointmentsScreen() {
   const renderItem = ({ item }: { item: Booking }) => (
     <View style={styles.card}>
       <View style={styles.cardHeader}>
-        <View>
-          <Text style={styles.serviceName}>{item.serviceName}</Text>
-          <Text style={styles.userName}>{item.userId?.fullName || 'Unknown User'}</Text>
+        <View style={{ flex: 1, paddingRight: 10 }}>
+          {item.serviceName && <Text style={styles.serviceName}>Spa: {item.serviceName}</Text>}
+          {item.groomerName && <Text style={styles.serviceName}>Groomer: {item.groomerName}</Text>}
+          <Text style={styles.userName}>Customer: {item.userId?.fullName || 'Unknown User'}</Text>
         </View>
         <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) + '15' }]}>
           <Text style={[styles.statusText, { color: getStatusColor(item.status) }]}>{item.status}</Text>
@@ -107,12 +115,12 @@ export default function AdminAppointmentsScreen() {
           <Text style={styles.detailText}>{item.userId?.email || 'No email'}</Text>
         </View>
         <View style={styles.detailRow}>
-          <Ionicons name="cash-outline" size={16} color="#666" />
-          <Text style={styles.detailText}>Rs. {item.price.toLocaleString()}</Text>
+          <Ionicons name="calendar-outline" size={16} color="#666" />
+          <Text style={styles.detailText}>{item.appointmentDate} at {item.appointmentTime}</Text>
         </View>
         <View style={styles.detailRow}>
-          <Ionicons name="time-outline" size={16} color="#666" />
-          <Text style={styles.detailText}>{new Date(item.createdAt).toLocaleDateString()} at {new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
+          <Ionicons name="cash-outline" size={16} color="#666" />
+          <Text style={styles.detailText}>Rs. {item.price ? item.price.toLocaleString() : '0'}</Text>
         </View>
       </View>
 

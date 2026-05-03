@@ -1,5 +1,6 @@
 import SpaService from "../models/SpaService.js";
 import SpaBooking from "../models/SpaBooking.js";
+import User from "../models/User.js";
 
 // Get all services
 export const getServices = async (req, res) => {
@@ -8,6 +9,16 @@ export const getServices = async (req, res) => {
     res.status(200).json(services);
   } catch (error) {
     res.status(500).json({ message: "Error fetching services", error: error.message });
+  }
+};
+
+// Get available groomers
+export const getAvailableGroomers = async (req, res) => {
+  try {
+    const groomers = await User.find({ role: "groomer", isActive: true }).select("-password");
+    res.status(200).json(groomers);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching groomers", error: error.message });
   }
 };
 
@@ -46,9 +57,28 @@ export const deleteService = async (req, res) => {
 // Book a service
 export const bookSpaService = async (req, res) => {
   try {
-    const { serviceId } = req.body;
-    const service = await SpaService.findById(serviceId);
-    if (!service) return res.status(404).json({ message: "Service not found" });
+    const { serviceId, groomerId, appointmentDate, appointmentTime, price } = req.body;
+    
+    if (!serviceId && !groomerId) {
+      return res.status(400).json({ message: "Must select a service or a groomer" });
+    }
+    if (!appointmentDate || !appointmentTime) {
+      return res.status(400).json({ message: "Appointment date and time are required" });
+    }
+
+    let serviceName = null;
+    if (serviceId) {
+      const service = await SpaService.findById(serviceId);
+      if (!service) return res.status(404).json({ message: "Service not found" });
+      serviceName = service.name;
+    }
+
+    let groomerName = null;
+    if (groomerId) {
+      const groomer = await User.findById(groomerId);
+      if (!groomer) return res.status(404).json({ message: "Groomer not found" });
+      groomerName = groomer.fullName;
+    }
 
     const paymentSlip = req.file ? `/uploads/pets/${req.file.filename}` : null;
     if (!paymentSlip) {
@@ -57,9 +87,13 @@ export const bookSpaService = async (req, res) => {
 
     const booking = await SpaBooking.create({
       userId: req.user._id,
-      serviceId: service._id,
-      serviceName: service.name,
-      price: service.price,
+      serviceId: serviceId || null,
+      serviceName,
+      groomerId: groomerId || null,
+      groomerName,
+      appointmentDate,
+      appointmentTime,
+      price: Number(price) || 0,
       paymentSlip,
     });
 
