@@ -125,25 +125,34 @@ const Sidebar = ({ isVisible, onClose }: SidebarProps) => {
               label="Home"
               onPress={() => handleNavigate('/(tabs)')}
             />
-            {user?.role !== 'groomer' && (
+            {user?.role === 'customer' && (
               <SidebarItem
                 icon="search-outline"
                 label="Explore"
                 onPress={() => handleNavigate('/(tabs)/explore')}
               />
             )}
-            {user?.role !== 'groomer' && (
+            {user?.role === 'customer' && (
               <SidebarItem
                 icon="sparkles-outline"
                 label="Spa Services"
                 onPress={() => handleNavigate('/(tabs)/spa')}
               />
             )}
-            <SidebarItem
-              icon="calendar-outline"
-              label={user?.role === 'groomer' ? "My Appointments" : "My Bookings"}
-              onPress={() => handleNavigate(user?.role === 'groomer' ? '/groomer/appointments' : '/(tabs)/history')}
-            />
+            {user?.role === 'groomer' && (
+              <SidebarItem
+                icon="calendar-outline"
+                label="My Appointments"
+                onPress={() => handleNavigate('/groomer/appointments')}
+              />
+            )}
+            {user?.role === 'customer' && (
+              <SidebarItem
+                icon="calendar-outline"
+                label="My Bookings"
+                onPress={() => handleNavigate('/(tabs)/history')}
+              />
+            )}
             {user?.role === 'groomer' && (
               <SidebarItem
                 icon="time-outline"
@@ -208,6 +217,11 @@ const Sidebar = ({ isVisible, onClose }: SidebarProps) => {
                   icon="cafe-outline"
                   label="Cafe Management"
                   onPress={() => handleNavigate('/admin/cafe')}
+                />
+                <SidebarItem
+                  icon="star-outline"
+                  label="Reviews & Feedback"
+                  onPress={() => handleNavigate('/admin/reviews')}
                 />
               </>
             )}

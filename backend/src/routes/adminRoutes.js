@@ -10,6 +10,7 @@ import {
   getAllPets,
   updatePetAdmin,
   deletePetAdmin,
+  getAllReviews,
 } from "../controller/adminController.js";
 
 const router = express.Router();
@@ -24,5 +25,8 @@ router.post("/groomer", protect, adminOnly, addGroomer);
 router.get("/pets", protect, adminOnly, getAllPets);
 router.put("/pets/:id", protect, adminOnly, upload.single("image"), updatePetAdmin);
 router.delete("/pets/:id", protect, adminOnly, deletePetAdmin);
+
+// Reviews Management
+router.get("/reviews", protect, adminOnly, getAllReviews);
 
 export default router;

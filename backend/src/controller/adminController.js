@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import User from "../models/User.js";
 import Pet from "../models/Pet.js";
+import DiaryEntry from "../models/DiaryEntry.js";
 
 // User Management
 export const getAllUsers = async (req, res) => {
@@ -143,5 +144,17 @@ export const deletePetAdmin = async (req, res) => {
     res.status(200).json({ message: "Pet deleted successfully." });
   } catch (error) {
     res.status(500).json({ message: "Failed to delete pet.", error: error.message });
+  }
+};
+
+// Reviews & Feedback
+export const getAllReviews = async (req, res) => {
+  try {
+    const reviews = await DiaryEntry.find({})
+      .populate("user", "fullName email")
+      .sort({ createdAt: -1 });
+    res.status(200).json(reviews);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch reviews.", error: error.message });
   }
 };
