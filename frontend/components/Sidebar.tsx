@@ -189,11 +189,18 @@ const Sidebar = ({ isVisible, onClose }: SidebarProps) => {
               label="My Profile"
               onPress={() => handleNavigate('/(tabs)/profile')}
             />
-            {user?.role !== 'admin' && (
+            {user?.role === 'customer' && (
               <SidebarItem
                 icon="book-outline"
                 label="Spa Diary"
                 onPress={() => handleNavigate('/(tabs)/diary')}
+              />
+            )}
+            {user?.role === 'groomer' && (
+              <SidebarItem
+                icon="star-outline"
+                label="Customer Feedbacks"
+                onPress={() => handleNavigate('/admin/reviews')}
               />
             )}
             {user?.role === 'customer' && (

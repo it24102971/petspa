@@ -1,6 +1,6 @@
 import express from "express";
 
-import { protect, adminOnly } from "../middleware/authMiddleware.js";
+import { protect, adminOnly, staffOnly } from "../middleware/authMiddleware.js";
 import upload from "../middleware/uploadMiddleware.js";
 import {
   getAllUsers,
@@ -31,6 +31,6 @@ router.put("/pets/:id", protect, adminOnly, upload.single("image"), updatePetAdm
 router.delete("/pets/:id", protect, adminOnly, deletePetAdmin);
 
 // Reviews Management
-router.get("/reviews", protect, adminOnly, getAllReviews);
+router.get("/reviews", protect, staffOnly, getAllReviews);
 
 export default router;

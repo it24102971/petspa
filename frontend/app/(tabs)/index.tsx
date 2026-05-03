@@ -185,14 +185,14 @@ const GroomerDashboardContent = ({ user, stats, router, notifications, onMarkAsR
       <View style={styles.groomerStatsRow}>
         <View style={[styles.statItemCard, { backgroundColor: '#ffffff' }]}>
           <View style={styles.statItemTop}>
-            <Text style={styles.statItemValue}>{stats?.avgRating || '4.8'}</Text>
+            <Text style={styles.statItemValue}>{stats?.avgRating || '0.0'}</Text>
             <Ionicons name="star" size={20} color="#FFD166" />
           </View>
           <Text style={styles.statItemLabel}>Average Rating</Text>
         </View>
         <View style={[styles.statItemCard, { backgroundColor: '#F3F0FF' }]}>
           <View style={styles.statItemTop}>
-            <Text style={styles.statItemValue}>{stats?.totalReviews || '12'}</Text>
+            <Text style={styles.statItemValue}>{stats?.totalReviews || '0'}</Text>
           </View>
           <Text style={styles.statItemLabel}>Total Reviews</Text>
         </View>
@@ -201,14 +201,14 @@ const GroomerDashboardContent = ({ user, stats, router, notifications, onMarkAsR
       <View style={styles.groomerStatsRow}>
         <View style={[styles.statItemCard, { backgroundColor: '#F0FAF5' }]}>
           <View style={styles.statItemTop}>
-            <Text style={styles.statItemValue}>{mySchedule?.length || '5'}</Text>
+            <Text style={styles.statItemValue}>{mySchedule?.length || '0'}</Text>
             <Ionicons name="calendar" size={20} color="#43A047" />
           </View>
           <Text style={styles.statItemLabel}>Today's Appointments</Text>
         </View>
         <View style={[styles.statItemCard, { backgroundColor: '#E3F2FD' }]}>
           <View style={styles.statItemTop}>
-            <Text style={styles.statItemValue}>{stats?.completedJobs || '32'}</Text>
+            <Text style={styles.statItemValue}>{stats?.completedJobs || '0'}</Text>
             <Ionicons name="checkmark-circle" size={20} color="#1E88E5" />
           </View>
           <Text style={styles.statItemLabel}>Completed Jobs</Text>
@@ -229,11 +229,15 @@ const GroomerDashboardContent = ({ user, stats, router, notifications, onMarkAsR
           return (
             <View key={job._id} style={styles.scheduleRowCard}>
               <View style={styles.petIconBackground}>
-                <Ionicons name="paw" size={24} color="#1A3B2F" />
+                {job.petId?.imageUrl ? (
+                  <Image source={{ uri: getImageUrl(job.petId.imageUrl) || '' }} style={{ width: '100%', height: '100%', borderRadius: 12 }} />
+                ) : (
+                  <Ionicons name="paw" size={24} color="#1A3B2F" />
+                )}
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={styles.schedulePetName}>{job.petId?.name || 'Buddy'}</Text>
-                <Text style={styles.schedulePetBreed}>{job.petId?.breed || job.serviceName || 'Golden Retriever'}</Text>
+                <Text style={styles.schedulePetName}>{job.petId?.name || job.petName || 'Buddy'}</Text>
+                <Text style={styles.schedulePetBreed}>{job.petId?.breed || job.serviceName || 'Pet'}</Text>
               </View>
               <View style={{ alignItems: 'flex-end' }}>
                 <Text style={styles.scheduleTime}>{job.appointmentTime || '10:00 AM'}</Text>

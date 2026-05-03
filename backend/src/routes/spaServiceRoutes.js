@@ -12,12 +12,14 @@ import {
   verifyBooking,
   acceptBooking,
   completeBooking,
+  getGroomerStats,
 } from "../controller/spaServiceController.js";
 
 const router = express.Router();
 
 router.get("/", getServices);
 router.get("/groomers", getAvailableGroomers);
+router.get("/groomer-stats", protect, getGroomerStats);
 router.post("/", protect, adminOnly, createService);
 router.put("/:id", protect, adminOnly, updateService);
 router.delete("/:id", protect, adminOnly, deleteService);

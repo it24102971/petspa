@@ -33,3 +33,11 @@ export const adminOnly = (req, res, next) => {
     res.status(403).json({ message: "Not authorized as an admin" });
   }
 };
+
+export const staffOnly = (req, res, next) => {
+  if (req.user && (req.user.role === "admin" || req.user.role === "groomer")) {
+    next();
+  } else {
+    res.status(403).json({ message: "Not authorized as staff" });
+  }
+};

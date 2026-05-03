@@ -9,6 +9,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 export default function ReviewsScreen() {
   const [reviews, setReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<any>(null);
   const router = useRouter();
 
   const fetchReviews = async () => {
@@ -17,7 +18,7 @@ export default function ReviewsScreen() {
       const token = await AsyncStorage.getItem('auth:token');
       
       if (!token) {
-        Alert.alert("Session Expired", "Please log in again as an administrator.");
+        Alert.alert("Session Expired", "Please log in again.");
         router.replace("/login");
         return;
       }
@@ -46,6 +47,11 @@ export default function ReviewsScreen() {
   };
 
   useEffect(() => {
+    const loadUser = async () => {
+      const userData = await AsyncStorage.getItem('auth:user');
+      if (userData) setUser(JSON.parse(userData));
+    };
+    loadUser();
     fetchReviews();
   }, []);
 
@@ -101,7 +107,9 @@ export default function ReviewsScreen() {
           <Pressable onPress={() => router.back()} style={styles.backButton} hitSlop={15}>
             <Ionicons name="chevron-back" size={24} color="#1A3B2F" />
           </Pressable>
-          <Text style={styles.headerTitle}>Reviews & Feedback</Text>
+          <Text style={styles.headerTitle}>
+            {user?.role === 'groomer' ? 'Customer Feedbacks' : 'Reviews & Feedback'}
+          </Text>
           <Pressable onPress={fetchReviews} style={styles.refreshButton} hitSlop={15}>
             <Ionicons name="refresh" size={20} color="#1A3B2F" />
           </Pressable>
@@ -122,7 +130,9 @@ export default function ReviewsScreen() {
             ListEmptyComponent={
               <View style={styles.emptyState}>
                 <Ionicons name="star-outline" size={48} color="rgba(26, 59, 47, 0.1)" />
-                <Text style={styles.emptyText}>No reviews found.</Text>
+                <Text style={styles.emptyText}>
+                  {user?.role === 'groomer' ? 'No feedback received yet.' : 'No reviews found.'}
+                </Text>
               </View>
             }
           />
