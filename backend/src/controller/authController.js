@@ -1,7 +1,9 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
-
+import Pet from "../models/Pet.js";
+import SpaBooking from "../models/SpaBooking.js";
+import CafeOrder from "../models/CafeOrder.js";
 export const getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user._id).select("-password");
@@ -212,5 +214,24 @@ export const uploadProfilePicture = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: "Upload failed", error: error.message });
+  }
+};
+
+export const getUserDashboardStats = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const [petsCount, bookingsCount, cafeOrdersCount] = await Promise.all([
+      Pet.countDocuments({ ownerId: userId }),
+      SpaBooking.countDocuments({ customerId: userId }),
+      CafeOrder.countDocuments({ userId: userId })
+    ]);
+
+    res.status(200).json({
+      pets: petsCount,
+      bookings: bookingsCount,
+      cafeOrders: cafeOrdersCount
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch stats", error: error.message });
   }
 };

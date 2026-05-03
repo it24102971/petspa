@@ -97,6 +97,15 @@ function TabLayoutContent() {
         />
 
         <Tabs.Screen
+          name="cafe"
+          options={{
+            title: 'Cafe',
+            tabBarIcon: ({ color }) => <Ionicons size={24} name="cafe" color={color} />,
+            href: userRole === 'customer' ? '/cafe' : null,
+          }}
+        />
+
+        <Tabs.Screen
           name="spa"
           options={{
             title: 'Spa',
@@ -108,7 +117,8 @@ function TabLayoutContent() {
         <Tabs.Screen
           name="profile"
           options={{
-
+            title: 'Profile',
+            tabBarIcon: ({ color }) => <Ionicons size={24} name="person" color={color} />,
           }}
         />
 

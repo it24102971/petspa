@@ -1,5 +1,5 @@
 import express from "express";
-import { registerUser as register, loginUser as login, updateUserProfile, uploadProfilePicture } from "../controller/authController.js";
+import { registerUser as register, loginUser as login, updateUserProfile, uploadProfilePicture, getUserDashboardStats } from "../controller/authController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import upload from "../middleware/uploadMiddleware.js";
 
@@ -9,5 +9,6 @@ router.post("/register", register);
 router.post("/login", login);
 router.put("/profile", protect, updateUserProfile);
 router.post("/profile-picture", protect, upload.single("profilePicture"), uploadProfilePicture);
+router.get("/dashboard-stats", protect, getUserDashboardStats);
 
 export default router;

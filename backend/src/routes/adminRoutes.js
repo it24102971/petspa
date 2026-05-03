@@ -11,9 +11,13 @@ import {
   updatePetAdmin,
   deletePetAdmin,
   getAllReviews,
+  getDashboardStats,
 } from "../controller/adminController.js";
 
 const router = express.Router();
+
+// Dashboard Stats
+router.get("/dashboard-stats", protect, adminOnly, getDashboardStats);
 
 // User Management
 router.get("/users", protect, adminOnly, getAllUsers);

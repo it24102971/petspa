@@ -153,6 +153,13 @@ const Sidebar = ({ isVisible, onClose }: SidebarProps) => {
                 onPress={() => handleNavigate('/(tabs)/history')}
               />
             )}
+            {user?.role === 'customer' && (
+              <SidebarItem
+                icon="cafe-outline"
+                label="My Cafe Orders"
+                onPress={() => handleNavigate('/history/cafe')}
+              />
+            )}
             {user?.role === 'groomer' && (
               <SidebarItem
                 icon="time-outline"

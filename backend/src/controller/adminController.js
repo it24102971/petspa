@@ -2,6 +2,30 @@ import bcrypt from "bcryptjs";
 import User from "../models/User.js";
 import Pet from "../models/Pet.js";
 import DiaryEntry from "../models/DiaryEntry.js";
+import SpaBooking from "../models/SpaBooking.js";
+
+// Dashboard Stats
+export const getDashboardStats = async (req, res) => {
+  try {
+    const [totalUsers, appointments, activeGroomers, avgRatingData] = await Promise.all([
+      User.countDocuments({ role: "customer" }),
+      SpaBooking.countDocuments(),
+      User.countDocuments({ role: "groomer", isActive: true }),
+      DiaryEntry.aggregate([{ $group: { _id: null, avg: { $avg: "$rating" } } }])
+    ]);
+
+    const avgRating = avgRatingData.length > 0 ? avgRatingData[0].avg.toFixed(1) : 0;
+
+    res.status(200).json({
+      totalUsers,
+      appointments,
+      activeGroomers,
+      avgRating
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch stats.", error: error.message });
+  }
+};
 
 // User Management
 export const getAllUsers = async (req, res) => {

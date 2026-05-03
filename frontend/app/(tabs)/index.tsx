@@ -21,7 +21,7 @@ const getImageUrl = (url: string | null | undefined) => {
 
 // --- Components ---
 
-const CustomerDashboardContent = ({ user, onLogout, onExplore, onOpenSidebar, onCafe, onPets }: any) => (
+const CustomerDashboardContent = ({ user, onLogout, onExplore, onOpenSidebar, onCafe, onPets, stats }: any) => (
   <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
     <View style={styles.header}>
       <View style={styles.headerLeft}>
@@ -50,16 +50,16 @@ const CustomerDashboardContent = ({ user, onLogout, onExplore, onOpenSidebar, on
 
     <View style={styles.statsContainer}>
       <View style={styles.statCard}>
-        <Text style={styles.statNumber}>12</Text>
+        <Text style={styles.statNumber}>{stats?.bookings || 0}</Text>
         <Text style={styles.statLabel}>Bookings</Text>
       </View>
       <Pressable style={styles.statCard} onPress={onPets}>
-        <Text style={styles.statNumber}>05</Text>
+        <Text style={styles.statNumber}>{stats?.pets || 0}</Text>
         <Text style={styles.statLabel}>Pets</Text>
       </Pressable>
       <View style={styles.statCard}>
-        <Text style={styles.statNumber}>08</Text>
-        <Text style={styles.statLabel}>Reviews</Text>
+        <Text style={styles.statNumber}>{stats?.cafeOrders || 0}</Text>
+        <Text style={styles.statLabel}>Cafe Orders</Text>
       </View>
     </View>
 
@@ -72,12 +72,6 @@ const CustomerDashboardContent = ({ user, onLogout, onExplore, onOpenSidebar, on
       <Text style={styles.emptyStateSub}>Book an appointment to pamper your furry friend.</Text>
       <Pressable style={styles.actionButton} onPress={onExplore}>
         <Text style={styles.actionButtonText}>Book Appointment</Text>
-      </Pressable>
-      <Pressable 
-        style={[styles.actionButton, { backgroundColor: '#1A3B2F', marginTop: 12 }]} 
-        onPress={onCafe}
-      >
-        <Text style={[styles.actionButtonText, { color: '#ffffff' }]}>Pet Cafe</Text>
       </Pressable>
     </View>
   </ScrollView>
@@ -247,7 +241,7 @@ const GroomerDashboardContent = ({ user, onLogout, onOpenSidebar, stats, router,
   );
 };
 
-const AdminDashboardContent = ({ user, onLogout, onOpenSidebar, onAddGroomer, onManageGroomers, router }: any) => (
+const AdminDashboardContent = ({ user, onLogout, onOpenSidebar, onAddGroomer, onManageGroomers, router, stats }: any) => (
   <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
     {/* Header */}
     <View style={styles.header}>
@@ -286,7 +280,7 @@ const AdminDashboardContent = ({ user, onLogout, onOpenSidebar, onAddGroomer, on
           onPress={() => router.push('/admin/users')}
         >
           <View style={styles.statBoxHeader}>
-            <Text style={styles.statBoxNumber}>1.2k</Text>
+            <Text style={styles.statBoxNumber}>{stats?.totalUsers || 0}</Text>
             <Ionicons name="people" size={20} color="#FFD166" />
           </View>
           <Text style={styles.statBoxLabel}>Total Users</Text>
@@ -296,7 +290,7 @@ const AdminDashboardContent = ({ user, onLogout, onOpenSidebar, onAddGroomer, on
           onPress={() => router.push('/admin/appointments')}
         >
           <View style={styles.statBoxHeader}>
-            <Text style={styles.statBoxNumber}>320</Text>
+            <Text style={styles.statBoxNumber}>{stats?.appointments || 0}</Text>
             <Ionicons name="calendar" size={20} color="#FFD166" />
           </View>
           <Text style={styles.statBoxLabel}>Appointments</Text>
@@ -308,14 +302,14 @@ const AdminDashboardContent = ({ user, onLogout, onOpenSidebar, onAddGroomer, on
           onPress={() => router.push('/admin/groomers')}
         >
           <View style={styles.statBoxHeader}>
-            <Text style={styles.statBoxNumber}>25</Text>
+            <Text style={styles.statBoxNumber}>{stats?.activeGroomers || 0}</Text>
             <Ionicons name="cut" size={20} color="#FFD166" />
           </View>
           <Text style={styles.statBoxLabel}>Active Groomers</Text>
         </Pressable>
         <View style={[styles.statBox, { backgroundColor: '#ffffff' }]}>
           <View style={styles.statBoxHeader}>
-            <Text style={styles.statBoxNumber}>4.9</Text>
+            <Text style={styles.statBoxNumber}>{stats?.avgRating || "0.0"}</Text>
             <Ionicons name="star" size={20} color="#FFD166" />
           </View>
           <Text style={styles.statBoxLabel}>Avg Rating</Text>
@@ -328,17 +322,17 @@ const AdminDashboardContent = ({ user, onLogout, onOpenSidebar, onAddGroomer, on
       <Text style={styles.sectionTitleText}>Management</Text>
     </View>
     <View style={styles.managementGrid}>
+      <Pressable style={styles.managementCard} onPress={() => router.push('/admin/appointments')}>
+        <View style={[styles.managementIconContainer, { backgroundColor: '#E3F2FD' }]}>
+          <Ionicons name="calendar" size={24} color="#1976D2" />
+        </View>
+        <Text style={styles.managementLabel}>Book Appt.</Text>
+      </Pressable>
       <Pressable style={styles.managementCard} onPress={() => router.push('/(tabs)/spa')}>
         <View style={[styles.managementIconContainer, { backgroundColor: '#EAF5EF' }]}>
           <Ionicons name="sparkles" size={24} color="#1A3B2F" />
         </View>
         <Text style={styles.managementLabel}>Services</Text>
-      </Pressable>
-      <Pressable style={styles.managementCard} onPress={() => router.push('/admin/cafe')}>
-        <View style={[styles.managementIconContainer, { backgroundColor: '#FDF2F2' }]}>
-          <Ionicons name="cafe" size={24} color="#EF5350" />
-        </View>
-        <Text style={styles.managementLabel}>Cafe</Text>
       </Pressable>
       <Pressable style={styles.managementCard} onPress={onAddGroomer}>
         <View style={[styles.managementIconContainer, { backgroundColor: '#1A3B2F' }]}>
@@ -356,6 +350,8 @@ export default function DashboardScreen() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [groomerStats, setGroomerStats] = useState<any>(null);
+  const [customerStats, setCustomerStats] = useState<any>(null);
+  const [adminStats, setAdminStats] = useState<any>(null);
   const [notifications, setNotifications] = useState<any[]>([]);
   const { openSidebar } = useSidebar();
   const router = useRouter();
@@ -399,6 +395,22 @@ export default function DashboardScreen() {
               if (notifRes.ok) {
                 const notifData = await notifRes.json();
                 setNotifications(notifData);
+              }
+            } else if (parsedUser.role === 'customer' && token) {
+              const statsRes = await fetch(`${API_BASE_URL}/auth/dashboard-stats`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+              });
+              if (statsRes.ok) {
+                const statsData = await statsRes.json();
+                setCustomerStats(statsData);
+              }
+            } else if (parsedUser.role === 'admin' && token) {
+              const statsRes = await fetch(`${API_BASE_URL}/admin/dashboard-stats`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+              });
+              if (statsRes.ok) {
+                const statsData = await statsRes.json();
+                setAdminStats(statsData);
               }
             }
           }
@@ -463,6 +475,7 @@ export default function DashboardScreen() {
             onAddGroomer={() => router.push('/admin/add-groomer')}
             onManageGroomers={() => router.push('/admin/groomers')}
             router={router}
+            stats={adminStats}
           />
         ) : user?.role === 'groomer' ? (
           <GroomerDashboardContent
@@ -482,6 +495,7 @@ export default function DashboardScreen() {
             onOpenSidebar={openSidebar}
             onCafe={() => router.push('/cafe' as any)}
             onPets={() => router.push('/(tabs)/profile')}
+            stats={customerStats}
             router={router}
           />
         )}

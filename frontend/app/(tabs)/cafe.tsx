@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { API_BASE_URL } from '@/constants/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useSidebar } from '@/context/SidebarContext';
 import * as ImagePicker from 'expo-image-picker';
 
 const AUTH_TOKEN_KEY = "auth:token";
@@ -24,6 +25,7 @@ interface CartItem extends CafeItem {
 
 export default function CafeScreen() {
   const router = useRouter();
+  const { openSidebar } = useSidebar();
   const [items, setItems] = useState<CafeItem[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -162,8 +164,8 @@ export default function CafeScreen() {
       <StatusBar style="dark" />
       <SafeAreaView style={{ flex: 1 }}>
         <View style={styles.header}>
-          <Pressable onPress={() => router.back()} style={styles.backButton}>
-            <Ionicons name="chevron-back" size={24} color="#1A3B2F" />
+          <Pressable onPress={openSidebar} style={styles.backButton}>
+            <Ionicons name="menu-outline" size={28} color="#1A3B2F" />
           </Pressable>
           <Text style={styles.headerTitle}>Pet Cafe</Text>
           <TouchableOpacity 
