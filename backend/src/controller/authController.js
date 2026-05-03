@@ -98,7 +98,9 @@ export const loginUser = async (req, res) => {
       return res.status(400).json({ message: "Email, username, or phone number and password are required." });
     }
 
-    const loginFilters = [{ email: normalizedIdentifier }, { username: normalizedIdentifier }];
+    console.log("Login attempt:", { email, username, normalizedIdentifier });
+
+    const loginFilters = [{ email: normalizedIdentifier }];
 
     if (phonePattern.test(rawIdentifier)) {
       loginFilters.push({ phoneNumber: rawIdentifier });
@@ -108,6 +110,7 @@ export const loginUser = async (req, res) => {
 
     const user = await User.findOne({ $or: loginFilters });
     if (!user) {
+      console.log("User not found for identifier:", normalizedIdentifier);
       return res.status(401).json({ message: "Invalid credentials." });
     }
 
@@ -131,6 +134,7 @@ export const loginUser = async (req, res) => {
     }
 
     if (!isPasswordMatch) {
+      console.log("Password mismatch for user:", user.email);
       return res.status(401).json({ message: "Invalid credentials." });
     }
 

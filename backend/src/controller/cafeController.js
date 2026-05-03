@@ -2,6 +2,8 @@ import CafeItem from "../models/CafeItem.js";
 import CafeOrder from "../models/CafeOrder.js";
 
 
+export const getCafeItems = async (req, res) => {
+  try {
     const items = await CafeItem.find({ isAvailable: true }).sort({ createdAt: -1 });
     res.status(200).json(items);
   } catch (error) {
