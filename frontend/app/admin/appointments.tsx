@@ -25,6 +25,14 @@ interface Booking {
     fullName: string;
   };
   groomerName?: string;
+  petId?: {
+    _id: string;
+    name: string;
+    type: string;
+    breed: string;
+    imageUrl?: string;
+  };
+  petName?: string;
   appointmentDate: string;
   appointmentTime: string;
   price: number;
@@ -102,6 +110,7 @@ export default function AdminAppointmentsScreen() {
         <View style={{ flex: 1, paddingRight: 10 }}>
           {item.serviceName && <Text style={styles.serviceName}>Spa: {item.serviceName}</Text>}
           {item.groomerName && <Text style={styles.serviceName}>Groomer: {item.groomerName}</Text>}
+          {item.petName && <Text style={styles.petName}>Pet: {item.petName}</Text>}
           <Text style={styles.userName}>Customer: {item.userId?.fullName || 'Unknown User'}</Text>
         </View>
         <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) + '15' }]}>
@@ -277,6 +286,12 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '900',
     color: '#1A3B2F',
+  },
+  petName: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#FFD166',
+    marginTop: 2,
   },
   userName: {
     fontSize: 14,

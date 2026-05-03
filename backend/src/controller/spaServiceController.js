@@ -1,6 +1,7 @@
 import SpaService from "../models/SpaService.js";
 import SpaBooking from "../models/SpaBooking.js";
 import User from "../models/User.js";
+import Pet from "../models/Pet.js";
 
 // Get all services
 export const getServices = async (req, res) => {
@@ -85,8 +86,16 @@ export const bookSpaService = async (req, res) => {
       return res.status(400).json({ message: "Payment slip is required" });
     }
 
+    let petName = null;
+    if (req.body.petId) {
+      const pet = await Pet.findById(req.body.petId);
+      if (pet) petName = pet.name;
+    }
+
     const booking = await SpaBooking.create({
       userId: req.user._id,
+      petId: req.body.petId || null,
+      petName,
       serviceId: serviceId || null,
       serviceName,
       groomerId: groomerId || null,
@@ -106,9 +115,24 @@ export const bookSpaService = async (req, res) => {
 // Get all bookings (admin gets all, user gets own)
 export const getAllBookings = async (req, res) => {
   try {
-    const query = req.user.role === "admin" ? {} : { userId: req.user._id };
+    let query = {};
+    if (req.user.role === "admin") {
+      query = {};
+    } else if (req.user.role === "groomer") {
+      query = { 
+        $or: [
+          { groomerId: req.user._id },
+          { status: "Confirmed", groomerId: null },
+          { status: "Confirmed", groomerId: { $exists: false } }
+        ]
+      };
+    } else {
+      query = { userId: req.user._id };
+    }
+
     const bookings = await SpaBooking.find(query)
       .populate("userId", "fullName email")
+      .populate("petId", "name type breed imageUrl")
       .sort({ createdAt: -1 });
     res.status(200).json(bookings);
   } catch (error) {

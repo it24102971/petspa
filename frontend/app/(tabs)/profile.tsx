@@ -182,19 +182,27 @@ export default function ProfileScreen() {
                 <Ionicons name="person" size={50} color="#1A3B2F" />
               </View>
             )}
-            <TouchableOpacity style={styles.camBadge} onPress={pickImage}>
-              <Ionicons name="camera" size={20} color="#1A3B2F" />
-            </TouchableOpacity>
+            {user?.role !== 'admin' && (
+              <TouchableOpacity style={styles.camBadge} onPress={pickImage}>
+                <Ionicons name="camera" size={20} color="#1A3B2F" />
+              </TouchableOpacity>
+            )}
           </View>
 
-          <Text style={styles.userName}>{user?.fullName}</Text>
-          <View style={styles.ratingRow}>
-            <Ionicons name="star" size={16} color="#FFD166" />
-            <Text style={styles.ratingText}>4.8 <Text style={styles.reviewCount}>(12 Reviews)</Text></Text>
-          </View>
+          <Text style={styles.userName}>{user?.role === 'admin' ? 'admin' : user?.fullName}</Text>
+          {user?.role !== 'admin' && (
+            <View style={styles.ratingRow}>
+              <Ionicons name="star" size={16} color="#FFD166" />
+              <Text style={styles.ratingText}>4.8 <Text style={styles.reviewCount}>(12 Reviews)</Text></Text>
+            </View>
+          )}
         </View>
 
-        {!isEditing ? (
+        {user?.role === 'admin' ? (
+          <View style={styles.infoSection}>
+            <InfoRow icon="mail-outline" label="Email" value="admin@petspa.com" />
+          </View>
+        ) : !isEditing ? (
           <View style={styles.infoSection}>
             <InfoRow icon="call-outline" label="Phone" value={user?.phoneNumber} />
             <InfoRow icon="mail-outline" label="Email" value={user?.email} />

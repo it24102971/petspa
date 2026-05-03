@@ -32,10 +32,19 @@ interface Booking {
   _id: string;
   serviceName?: string;
   groomerName?: string;
+  petId?: {
+    _id: string;
+    name: string;
+  };
+  petName?: string;
   appointmentDate: string;
   appointmentTime: string;
   status: string;
   price: number;
+  userId?: {
+    _id: string;
+    fullName: string;
+  };
 }
 
 export default function AppointmentsScreen() {
@@ -67,6 +76,8 @@ export default function AppointmentsScreen() {
   const [paymentSlipUri, setPaymentSlipUri] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [userPets, setUserPets] = useState<any[]>([]);
+  const [selectedPet, setSelectedPet] = useState<any | null>(null);
 
   useEffect(() => {
     const getRole = async () => {
@@ -105,12 +116,17 @@ export default function AppointmentsScreen() {
 
   const fetchBookingData = async () => {
     try {
-      const [groomersRes, servicesRes] = await Promise.all([
+      const token = await AsyncStorage.getItem("auth:token");
+      const [groomersRes, servicesRes, petsRes] = await Promise.all([
         fetch(`${API_BASE_URL}/spa-services/groomers`),
-        fetch(`${API_BASE_URL}/spa-services`)
+        fetch(`${API_BASE_URL}/spa-services`),
+        fetch(`${API_BASE_URL}/pets`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
       ]);
       if (groomersRes.ok) setGroomers(await groomersRes.json());
       if (servicesRes.ok) setServices(await servicesRes.json());
+      if (petsRes.ok) setUserPets(await petsRes.json());
     } catch (error) {
       console.error("Failed to fetch booking data", error);
     } finally {
@@ -153,6 +169,10 @@ export default function AppointmentsScreen() {
       Alert.alert("Error", "Please upload a payment receipt.");
       return;
     }
+    if (!selectedPet) {
+      Alert.alert("Error", "Please select a pet for this appointment.");
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -166,6 +186,7 @@ export default function AppointmentsScreen() {
       formData.append('appointmentDate', date);
       formData.append('appointmentTime', time);
       formData.append('price', calculateTotal().toString());
+      formData.append('petId', selectedPet._id);
       formData.append('paymentSlip', {
         uri: paymentSlipUri,
         name: filename,
@@ -212,9 +233,12 @@ export default function AppointmentsScreen() {
           {userRole === 'admin' && item.userId?.fullName && (
             <Text style={{ fontSize: 12, fontWeight: '800', color: '#FFD166', marginBottom: 2 }}>{item.userId.fullName}</Text>
           )}
-          <Text style={styles.petName}>{item.serviceName || item.groomerName || 'Spa Service'}</Text>
+          <Text style={styles.petName}>
+            {item.petName || item.serviceName || item.groomerName || 'Spa Service'}
+          </Text>
           <Text style={styles.petBreed}>
-            {item.groomerName && item.serviceName ? `With ${item.groomerName}` : (item.serviceName ? 'Spa Treatment' : 'Grooming Session')}
+            {item.serviceName ? item.serviceName : (item.groomerName ? 'Grooming' : 'Spa Treatment')}
+            {item.groomerName ? ` • With ${item.groomerName}` : ''}
           </Text>
           
           <View style={styles.infoRow}>
@@ -317,7 +341,35 @@ export default function AppointmentsScreen() {
                     <Text style={{ fontWeight: '700', color: '#1A3B2F' }}>Rs. {selectedService.price}</Text>
                   </View>
                 )}
+                {selectedPet && (
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
+                    <Text style={styles.summaryItem}>• Pet: {selectedPet.name}</Text>
+                    <Text style={{ fontWeight: '700', color: '#1A3B2F' }}>{selectedPet.type}</Text>
+                  </View>
+                )}
                 <Text style={styles.summaryTotal}>Total: Rs. {calculateTotal()}</Text>
+              </View>
+
+              <Text style={styles.inputLabel}>Select Pet *</Text>
+              <View style={styles.petPickerContainer}>
+                {userPets.length === 0 ? (
+                  <Pressable style={styles.noPetsBtn} onPress={() => { setModalVisible(false); router.push('/pets'); }}>
+                    <Text style={styles.noPetsText}>No pets found. Click to add a pet first.</Text>
+                  </Pressable>
+                ) : (
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10, paddingVertical: 5 }}>
+                    {userPets.map(pet => (
+                      <Pressable 
+                        key={pet._id} 
+                        style={[styles.petMiniCard, selectedPet?._id === pet._id && styles.petMiniCardActive]}
+                        onPress={() => setSelectedPet(pet)}
+                      >
+                        <Ionicons name="paw" size={20} color={selectedPet?._id === pet._id ? "#1A3B2F" : "rgba(26,59,47,0.3)"} />
+                        <Text style={[styles.petMiniName, selectedPet?._id === pet._id && styles.petMiniNameActive]}>{pet.name}</Text>
+                      </Pressable>
+                    ))}
+                  </ScrollView>
+                )}
               </View>
 
               <Text style={styles.inputLabel}>Date (e.g. 20 May 2024)</Text>
@@ -618,5 +670,43 @@ const styles = StyleSheet.create({
   modalFooter: { padding: 20, borderTopWidth: 1, borderTopColor: '#eee' },
   bookButton: { backgroundColor: '#FFD166', padding: 18, borderRadius: 16, alignItems: 'center' },
   bookButtonDisabled: { opacity: 0.5 },
-  bookButtonText: { fontSize: 16, fontWeight: '900', color: '#1A3B2F' }
+  bookButtonText: { fontSize: 16, fontWeight: '900', color: '#1A3B2F' },
+  petPickerContainer: {
+    marginBottom: 20,
+  },
+  noPetsBtn: {
+    padding: 15,
+    backgroundColor: 'rgba(26,59,47,0.05)',
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  noPetsText: {
+    color: '#1A3B2F',
+    fontWeight: '700',
+    fontSize: 14,
+    textDecorationLine: 'underline',
+  },
+  petMiniCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(26,59,47,0.1)',
+    gap: 8,
+  },
+  petMiniCardActive: {
+    backgroundColor: '#FFD166',
+    borderColor: '#FFD166',
+  },
+  petMiniName: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: 'rgba(26,59,47,0.5)',
+  },
+  petMiniNameActive: {
+    color: '#1A3B2F',
+  },
 });

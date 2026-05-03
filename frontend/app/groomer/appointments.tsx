@@ -35,6 +35,7 @@ interface Booking {
     name: string;
     breed: string;
   };
+  petName?: string;
 }
 
 export default function GroomerAppointmentsScreen() {

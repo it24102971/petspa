@@ -62,13 +62,29 @@ export default function CafeScreen() {
 
   useEffect(() => { fetchItems(); }, []);
 
+  const defaultItems: CafeItem[] = [
+    { _id: 'd1', name: 'Tuna Mini Cupcakes', description: 'Delicious bite-sized tuna treats for cats.', price: 450, category: 'Dessert', imageUrl: '' },
+    { _id: 'd2', name: 'Puppy Latte', description: 'Safe, lactose-free milk with a dash of honey.', price: 550, category: 'Drinks', imageUrl: '' },
+    { _id: 'd3', name: 'Paw Biscuits', description: 'Crunchy oat and peanut butter biscuits.', price: 300, category: 'Snack', imageUrl: '' },
+    { _id: 'd4', name: 'Chicken Bowl', description: 'Freshly cooked chicken with steamed veggies.', price: 1200, category: 'Meal', imageUrl: '' },
+    { _id: 'd5', name: 'Rainbow Shake', description: 'Fruit-based colorful shake for cooling down.', price: 650, category: 'Drinks', imageUrl: '' },
+  ];
+
   const fetchItems = async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/cafe/items`);
       const data = await res.json();
-      if (res.ok) setItems(data);
-    } catch (e) { console.error('Fetch cafe items failed:', e); }
-    finally { setLoading(false); }
+      if (res.ok && data.length > 0) {
+        setItems(data);
+      } else {
+        setItems(defaultItems);
+      }
+    } catch (e) { 
+      console.error('Fetch cafe items failed:', e);
+      setItems(defaultItems);
+    } finally { 
+      setLoading(false); 
+    }
   };
 
   const getImageUrl = (url: string) => {

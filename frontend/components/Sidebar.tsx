@@ -113,7 +113,9 @@ const Sidebar = ({ isVisible, onClose }: SidebarProps) => {
               )}
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.sidebarName} numberOfLines={2}>{user?.fullName || 'Guest'}</Text>
+              <Text style={styles.sidebarName} numberOfLines={2}>
+                {user?.role === 'admin' ? 'admin' : (user?.fullName || 'Guest')}
+              </Text>
               <Text style={styles.sidebarRole}>{(user?.role || 'customer').toUpperCase()}</Text>
             </View>
           </View>
