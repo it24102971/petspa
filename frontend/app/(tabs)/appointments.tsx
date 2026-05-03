@@ -227,7 +227,7 @@ export default function AppointmentsScreen() {
         </View>
 
         <ScrollView contentContainerStyle={styles.content}>
-          <Text style={styles.subtitle}>Select a groomer, a spa service, or both.</Text>
+          <Text style={styles.subtitle}>Select a groomer to book your appointment.</Text>
 
           {/* Groomers Section */}
           <Text style={styles.sectionTitle}>Available Groomers</Text>
@@ -256,29 +256,9 @@ export default function AppointmentsScreen() {
               )}
             </Pressable>
           ))}
-
-          {/* Services Section */}
-          <Text style={styles.sectionTitle}>Spa Services</Text>
-          {services.map(service => (
-            <Pressable 
-              key={service._id} 
-              style={[styles.serviceCard, selectedService?._id === service._id && styles.selectedCard]}
-              onPress={() => setSelectedService(selectedService?._id === service._id ? null : service)}
-            >
-              <View style={styles.serviceInfo}>
-                <Text style={styles.serviceName}>{service.name}</Text>
-                <Text style={styles.serviceDesc}>{service.description}</Text>
-                <Text style={styles.serviceDuration}><Ionicons name="time-outline" /> {service.duration}</Text>
-              </View>
-              <Text style={styles.servicePrice}>Rs. {service.price}</Text>
-              {selectedService?._id === service._id && (
-                <Ionicons name="checkmark-circle" size={28} color="#FFD166" style={{ marginLeft: 10 }} />
-              )}
-            </Pressable>
-          ))}
         </ScrollView>
 
-        {(selectedGroomer || selectedService) && (
+        {selectedGroomer && (
           <View style={styles.footer}>
             <View>
               <Text style={styles.totalText}>Total</Text>
