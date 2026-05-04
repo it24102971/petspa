@@ -1,13 +1,11 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, Pressable, Image, ActivityIndicator, Alert, TextInput, TouchableOpacity, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { API_BASE_URL } from '@/constants/api';
 import { StatusBar } from 'expo-status-bar';
-
-import { useSidebar } from '@/context/SidebarContext';
 
 const AUTH_USER_KEY = "auth:user";
 const AUTH_TOKEN_KEY = "auth:token";
@@ -21,9 +19,7 @@ const getImageUrl = (url: string | null | undefined) => {
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { openSidebar } = useSidebar();
   const [user, setUser] = useState<any>(null);
-
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -45,8 +41,10 @@ export default function ProfileScreen() {
       const res = await fetch(`${API_BASE_URL}/auth/me`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
+      
       if (res.ok) {
         const parsed = await res.json();
+        console.log("Fetched User Profile:", parsed);
         setUser(parsed);
         setFormData({
           fullName: parsed.fullName || '',
@@ -60,6 +58,11 @@ export default function ProfileScreen() {
           availableTime: parsed.availableTime || '',
         });
         await AsyncStorage.setItem(AUTH_USER_KEY, JSON.stringify(parsed));
+      } else {
+        console.log("Profile fetch failed:", res.status);
+        // If not ok, we might want to check if we have cached user data
+        const cachedUser = await AsyncStorage.getItem(AUTH_USER_KEY);
+        if (cachedUser) setUser(JSON.parse(cachedUser));
       }
     } catch (error) {
       console.error("Load user failed:", error);
@@ -68,9 +71,12 @@ export default function ProfileScreen() {
     }
   }, []);
 
-  useEffect(() => {
-    loadUser();
-  }, [loadUser]);
+  useFocusEffect(
+    useCallback(() => {
+      loadUser();
+    }, [loadUser])
+  );
+
 
   const handleUpdateProfile = async () => {
     setUpdating(true);
@@ -165,17 +171,15 @@ export default function ProfileScreen() {
     <SafeAreaView style={styles.container}>
       <StatusBar style="dark" />
       
-      {/* Custom Header to match screenshot */}
       <View style={styles.header}>
-        <Pressable onPress={openSidebar} style={styles.headerBtn}>
-          <Ionicons name="menu" size={28} color="#000" />
+        <Pressable style={styles.headerBtn}>
+          <Ionicons name="menu-outline" size={28} color="#000" />
         </Pressable>
         <Text style={styles.headerTitle}>Profile</Text>
         <Pressable style={styles.headerBtn}>
           <Ionicons name="notifications-outline" size={24} color="#000" />
         </Pressable>
       </View>
-
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.profileHeader}>
@@ -184,7 +188,7 @@ export default function ProfileScreen() {
               <Image source={{ uri: getImageUrl(user.profilePicture) || '' }} style={styles.avatar} />
             ) : (
               <View style={styles.avatarPlaceholder}>
-                <Ionicons name="person" size={80} color="#1A3B2F" />
+                <Ionicons name="person" size={70} color="#1A3B2F" />
               </View>
             )}
             <View style={styles.camBadge}>
@@ -192,19 +196,21 @@ export default function ProfileScreen() {
             </View>
           </Pressable>
 
-          <Text style={styles.userName}>{user?.fullName || 'Sithumi Abeywickrama'}</Text>
+          <Text style={styles.userName}>{user?.fullName || 'Guest'}</Text>
           
-          <View style={styles.ratingContainer}>
-            <Ionicons name="star" size={20} color="#FFD166" />
-            <Text style={styles.ratingText}>4.8 </Text>
-            <Text style={styles.reviewsText}>(12 Reviews)</Text>
-          </View>
+          {user?.role === 'groomer' && (
+            <View style={styles.ratingRow}>
+              <Ionicons name="star" size={20} color="#FFD166" />
+              <Text style={styles.ratingText}>4.8 </Text>
+              <Text style={styles.reviewText}>(12 Reviews)</Text>
+            </View>
+          )}
         </View>
 
         {!isEditing ? (
           <View style={styles.infoSection}>
-            <InfoCard icon="call-outline" label="Phone" value={user?.phoneNumber || '0752518673'} />
-            <InfoCard icon="mail-outline" label="Email" value={user?.email || 'abeysithumi@gmail.com'} />
+            <InfoCard icon="call-outline" label="Phone" value={user?.phoneNumber} />
+            <InfoCard icon="mail-outline" label="Email" value={user?.email} />
             
             {user?.role === 'groomer' && (
               <>
@@ -213,7 +219,7 @@ export default function ProfileScreen() {
                 <InfoCard 
                   icon="time-outline" 
                   label="Availability" 
-                  value={(user?.availableDays && user?.availableTime) ? `${user.availableDays} (${user.availableTime})` : 'Mon - Sat (9AM - 6PM)'} 
+                  value={`${user?.availableDays || 'Mon - Sat'} (${user?.availableTime || '9AM - 6PM'})`} 
                 />
               </>
             )}
@@ -224,10 +230,26 @@ export default function ProfileScreen() {
 
             <TouchableOpacity 
               style={styles.editBtn} 
-              onPress={() => setIsEditing(true)}
+              onPress={() => {
+                if (user) {
+                  setFormData({
+                    fullName: user.fullName || '',
+                    email: user.email || '',
+                    phoneNumber: user.phoneNumber || '',
+                    address: user.address || '',
+                    aboutMe: user.aboutMe || '',
+                    experience: user.experience || '',
+                    specialization: user.specialization || '',
+                    availableDays: user.availableDays || '',
+                    availableTime: user.availableTime || '',
+                  });
+                }
+                setIsEditing(true);
+              }}
             >
               <Text style={styles.editBtnText}>Edit Profile</Text>
             </TouchableOpacity>
+
           </View>
         ) : (
           <View style={styles.form}>
@@ -243,6 +265,10 @@ export default function ProfileScreen() {
                 <InputGroup label="Available Time" value={formData.availableTime} onChange={(t) => setFormData({...formData, availableTime: t})} placeholder="e.g. 9AM - 6PM" />
                 <InputGroup label="About Me" value={formData.aboutMe} onChange={(t) => setFormData({...formData, aboutMe: t})} multiline />
               </>
+            )}
+            
+            {user?.role === 'customer' && (
+              <InputGroup label="Address" value={formData.address} onChange={(t) => setFormData({...formData, address: t})} multiline />
             )}
 
             <View style={{ flexDirection: 'row', gap: 12, marginTop: 10 }}>
@@ -262,11 +288,11 @@ export default function ProfileScreen() {
 
 const InfoCard = ({ icon, label, value }: any) => (
   <View style={styles.infoRow}>
-    <View style={styles.iconContainer}>
+    <View style={styles.infoLeft}>
       <Ionicons name={icon} size={24} color="#000" />
+      <Text style={styles.infoLabel}>{label}</Text>
     </View>
-    <Text style={styles.infoLabel}>{label}</Text>
-    <Text style={styles.infoValue}>{value || 'Not set'}</Text>
+    <Text style={styles.infoValue} numberOfLines={1}>{value || 'Not set'}</Text>
   </View>
 );
 
@@ -302,18 +328,20 @@ const styles = StyleSheet.create({
     height: 60,
     marginTop: Platform.OS === 'android' ? 30 : 0
   },
-  headerTitle: { fontSize: 22, fontWeight: '700', color: '#000' },
+  headerTitle: { fontSize: 22, fontWeight: 'bold', color: '#000' },
   headerBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
-  scrollContent: { paddingBottom: 100 },
+  scrollContent: { paddingBottom: 60 },
   profileHeader: { alignItems: 'center', marginTop: 20, marginBottom: 30 },
   avatarWrapper: { 
     width: 140, 
     height: 140, 
     borderRadius: 70, 
-    backgroundColor: '#eee', 
+    backgroundColor: '#F0F0F0', 
     alignItems: 'center', 
     justifyContent: 'center',
     position: 'relative',
+    borderWidth: 1,
+    borderColor: '#eee'
   },
   avatar: { width: '100%', height: '100%', borderRadius: 70 },
   avatarPlaceholder: { flex: 1, alignItems: 'center', justifyContent: 'center' },
@@ -330,33 +358,22 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#fff'
   },
-  userName: { fontSize: 24, fontWeight: '900', color: '#000', marginTop: 20 },
-  ratingContainer: { flexDirection: 'row', alignItems: 'center', marginTop: 8 },
-  ratingText: { fontSize: 18, fontWeight: '700', color: '#000', marginLeft: 4 },
-  reviewsText: { fontSize: 16, color: '#666', fontWeight: '500' },
-  infoSection: { paddingHorizontal: 24, marginTop: 10 },
+  userName: { fontSize: 26, fontWeight: 'bold', color: '#000', marginTop: 15 },
+  ratingRow: { flexDirection: 'row', alignItems: 'center', marginTop: 8 },
+  ratingText: { fontSize: 18, fontWeight: 'bold', color: '#000', marginLeft: 8 },
+  reviewText: { fontSize: 18, color: '#666' },
+  
+  infoSection: { paddingHorizontal: 25, marginTop: 10 },
   infoRow: { 
     flexDirection: 'row', 
     alignItems: 'center', 
-    paddingVertical: 16,
+    justifyContent: 'space-between',
+    paddingVertical: 18,
   },
-  iconContainer: {
-    width: 30,
-    alignItems: 'flex-start',
-  },
-  infoLabel: { 
-    fontSize: 16, 
-    color: '#666', 
-    fontWeight: '500', 
-    flex: 1,
-    marginLeft: 8
-  },
-  infoValue: { 
-    fontSize: 16, 
-    fontWeight: '700', 
-    color: '#000',
-    textAlign: 'right'
-  },
+  infoLeft: { flexDirection: 'row', alignItems: 'center', gap: 15 },
+  infoLabel: { fontSize: 16, color: '#666', fontWeight: '500' },
+  infoValue: { fontSize: 16, fontWeight: 'bold', color: '#000', flex: 1, textAlign: 'right', marginLeft: 20 },
+  
   editBtn: { 
     backgroundColor: '#FFD166', 
     height: 60, 
@@ -364,14 +381,16 @@ const styles = StyleSheet.create({
     alignItems: 'center', 
     justifyContent: 'center', 
     marginTop: 40,
+    width: '100%'
   },
-  editBtnText: { fontSize: 18, fontWeight: '700', color: '#1A3B2F' },
+  editBtnText: { fontSize: 18, fontWeight: 'bold', color: '#000' },
+  
   form: { paddingHorizontal: 24, gap: 16 },
   inputGroup: { gap: 6 },
-  label: { fontSize: 13, fontWeight: '800', color: 'rgba(26, 59, 47, 0.5)', marginLeft: 4 },
-  input: { backgroundColor: '#F8FBF9', borderRadius: 16, paddingHorizontal: 16, paddingVertical: 14, fontSize: 15, color: '#1A3B2F', borderWidth: 1, borderColor: '#eee' },
+  label: { fontSize: 13, fontWeight: '800', color: 'rgba(0,0,0,0.5)', marginLeft: 4 },
+  input: { backgroundColor: '#F8FBF9', borderRadius: 16, paddingHorizontal: 16, paddingVertical: 14, fontSize: 15, color: '#000', borderWidth: 1, borderColor: '#eee' },
   saveBtn: { backgroundColor: '#FFD166', height: 56, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
-  saveBtnText: { fontSize: 16, fontWeight: '900', color: '#1A3B2F' },
+  saveBtnText: { fontSize: 16, fontWeight: 'bold', color: '#000' },
 });
 
 
