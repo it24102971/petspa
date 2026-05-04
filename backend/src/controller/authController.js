@@ -36,7 +36,10 @@ const createAuthResponse = (user) => {
       experience: user.experience,
       specialization: user.specialization,
       aboutMe: user.aboutMe,
+      availableDays: user.availableDays,
+      availableTime: user.availableTime,
     },
+
   };
 };
 
@@ -152,7 +155,7 @@ export const loginUser = async (req, res) => {
 export const updateUserProfile = async (req, res) => {
   try {
     const userId = req.user._id;
-    const { fullName, email, phoneNumber, address, experience, specialization, aboutMe, profilePicture } = req.body;
+    const { fullName, email, phoneNumber, address, experience, specialization, aboutMe, profilePicture, availableDays, availableTime } = req.body;
 
     const updateData = {
       fullName,
@@ -162,8 +165,11 @@ export const updateUserProfile = async (req, res) => {
       experience,
       specialization,
       aboutMe,
-      profilePicture
+      profilePicture,
+      availableDays,
+      availableTime
     };
+
 
     const updatedUser = await User.findByIdAndUpdate(
       userId,
@@ -186,7 +192,10 @@ export const updateUserProfile = async (req, res) => {
       experience: updatedUser.experience,
       specialization: updatedUser.specialization,
       aboutMe: updatedUser.aboutMe,
+      availableDays: updatedUser.availableDays,
+      availableTime: updatedUser.availableTime,
     });
+
   } catch (error) {
     return res.status(500).json({ message: "Failed to update profile.", error: error.message });
   }
